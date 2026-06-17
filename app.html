@@ -908,17 +908,17 @@ class Component extends DCLogic {
           dp={ ini:p.ini, color:p.color, name:p.name, sub:(p.role||'')+' · '+(p.org||''), kindLabel:'Speaker', avatarRadius:'50%',
             chips:[{k:'Role',v:p.role},{k:'Téma',v:p.tag}], bodyLabel:'Bio', body:p.bio,
             hasLooking:false, hasSession:!!p.sessTitle, sessionTitle:p.sessTitle, sessionWhen:p.sessWhen, hasContact:false, msgLabel:'Zavřít',
-            message:()=>this.setState({detail:null}), connect:()=>this.setState({detail:null}) };
+            message:()=>this.setState({detail:null}), connect:()=>this.connectAdd({name:p.name, company:(p.org||p.role||''), email:'', phone:'', linkedin:''}) };
         } else if(t==='zbrojar'){ const p=this.zbrojari.find(x=>x.id===s.detail.id)||{};
           dp={ ini:p.ini, color:p.color, name:p.name, sub:p.makes, kindLabel:'Obranná firma', avatarRadius:'13px',
             chips:[{k:'Země',v:p.country},{k:'Role',v:'Leader stolů'}], bodyLabel:'Profil', body:p.desc,
             hasLooking:true, looking:p.looking, hasSession:false, hasContact:false, hasWebLink:!!p.web, webUrl:(p.web?(/^https?:/.test(p.web)?p.web:'https://'+p.web):''), web:(p.web||'').replace(/^https?:\/\//,''), msgLabel:'Zavřít',
-            message:()=>this.setState({detail:null}), connect:()=>this.setState({detail:null}) };
+            message:()=>this.setState({detail:null}), connect:()=>this.connectAdd({name:p.name, company:(p.makes||''), email:'', phone:'', linkedin:(p.web?(/^https?:/.test(p.web)?p.web:'https://'+p.web):'')}) };
         } else { const p=this.firmy.find(x=>x.id===s.detail.id)||{}; const dom=this.webFromEmail(p.email);
           dp={ ini:p.ini, color:p.color, name:p.name, sub:p.cat, kindLabel:'Účastník · firma', avatarRadius:'13px',
             chips:[{k:'Kategorie',v:p.cat},{k:'Skupina',v:'Skupina '+p.grp}], bodyLabel:'Medailonek', body:p.desc,
             hasLooking:false, hasSession:false, hasContact:true, contactName:p.person, contactRole:p.role, contactEmail:p.email, hasWeb:!!dom, web:dom, webUrl:(dom?'https://'+dom:''), msgLabel:'Napsat e‑mail',
-            message:()=>{ if(p.email) window.open('mailto:'+p.email,'_blank'); }, connect:()=>this.setState({detail:null}) };
+            message:()=>{ if(p.email) window.open('mailto:'+p.email,'_blank'); }, connect:()=>this.connectAdd({name:(p.person||p.name), company:p.name, email:(p.email||''), phone:'', linkedin:''}) };
         }
       } else {
         detailIsSession=true;
@@ -1061,6 +1061,7 @@ class Component extends DCLogic {
     if(/linkedin\.com/i.test(txt)){ return {name:'',company:'',phone:'',email:'',linkedin:(/^https?:/i.test(txt)?txt:'https://'+txt)}; }
     if(/^mailto:/i.test(txt)||/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(txt)){ return {name:'',company:'',phone:'',email:txt.replace(/^mailto:/i,''),linkedin:''}; }
     return {name:txt.slice(0,48),company:'',phone:'',email:'',linkedin:''}; }
+  connectAdd(obj){ if(!obj) return; const list=this.state.contacts||[]; const dup=list.some(x=>((x.name||'')===(obj.name||''))&&((x.company||'')===(obj.company||''))); if(!dup){ this.addContact(obj); } this.setState({detail:null, badgeOpen:true, badgeTab:'kontakty', notifOpen:false}); }
   addContact(c){ if(!c) return; const base=(c.name||c.company||'Kontakt').trim();
     const ini=(base.split(/\s+/).slice(0,2).map(w=>w[0]).join('')||'?').toUpperCase();
     const colors=['#2B5CC4','#1C2F63','#6E9152','#3E7CA8','#46618F']; const color=colors[Math.floor(Math.random()*colors.length)];
