@@ -20,7 +20,9 @@
 @keyframes dhsheet{from{transform:translateY(100%)}to{transform:translateY(0)}}
 @keyframes dhdrop{from{transform:translateY(-14px);opacity:0}to{transform:translateY(0);opacity:1}}
 .dhscroll::-webkit-scrollbar{width:0;height:0}
+#t4d-reader video{border-radius:14px}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </helmet>
 
 <div ref="{{ rootRef }}" style="--ink:#0B1530;--navy:#13234E;--navy2:#1C2F63;--blue:{{ accentVar }};--blueSoft:#E8EEFA;--green:#8CAA72;--greenDeep:#6E9152;--greenSoft:#ECF1E5;--paper:#FBFBFC;--mist:#F3F5F9;--line:#E2E7F0;--muted:#5C6886;min-height:100vh;background:radial-gradient(130% 120% at 80% 0%,#1B2D5E 0%,#0E1B3C 48%,#0B1530 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:34px 16px;font-family:'IBM Plex Sans',sans-serif;-webkit-font-smoothing:antialiased">
@@ -128,6 +130,19 @@
               <div><div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;color:var(--navy)">Parkování</div><div style="font-size:11px;color:var(--muted);margin-top:1px">Doprava do centra</div></div>
             </div>
           </div>
+
+          <!-- spolecna whatsapp skupina -->
+          <sc-if value="{{ hasWaAll }}" hint-placeholder-val="{{ false }}">
+          <a href="{{ waAll }}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:13px;margin:14px 16px 0;background:#fff;border:1px solid var(--line);border-left:3px solid #25D366;border-radius:15px;padding:14px 16px;text-decoration:none" style-hover="border-color:#cdd6e6">
+            <div style="flex:none;width:42px;height:42px;border-radius:11px;background:#eaf9ef;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="#25D366"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.6-5.8c-.3-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.1-.6 0a6.7 6.7 0 0 1-2-1.2 7.5 7.5 0 0 1-1.4-1.7c-.1-.3 0-.4.1-.5l.4-.5.2-.3v-.4l-.8-2c-.2-.4-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 2.9 2.9 0 0 0-.9 2.2 5 5 0 0 0 1.1 2.6 11.4 11.4 0 0 0 4.4 3.9c2 .8 2.1.5 2.5.5a2.5 2.5 0 0 0 1.6-1.2 2 2 0 0 0 .2-1.2c-.1-.1-.3-.2-.5-.3z"/></svg></div>
+            <div style="flex:1;min-width:0">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--greenDeep);font-weight:600">Oznámení akce</div>
+              <div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14.5px;color:var(--navy);margin-top:2px">Společná WhatsApp skupina</div>
+              <div style="font-size:11.5px;color:var(--muted);margin-top:1px">Důležité info od organizátorů v reálném čase</div>
+            </div>
+            <span style="flex:none;color:#25D366;font-size:18px">›</span>
+          </a>
+          </sc-if>
 
           <!-- org info -->
           <div style="margin:22px 16px 0">
@@ -304,11 +319,10 @@
                 </div>
                 <span style="margin-left:10px;font-size:12px;color:#AEBBD8">{{ myMembersCount }} firem ve skupině</span>
               </div>
-              <div onClick="{{ openChat }}" style="margin-top:17px;background:#2B5CC4;border-radius:11px;padding:13px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px" style-hover="background:#3E72E0">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-6.5A8 8 0 1 1 21 12z"/></svg>
-                Chat skupiny
-                <sc-if value="{{ unread }}" hint-placeholder-val="{{ true }}"><span style="background:#8CAA72;color:#0B1530;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px">{{ unreadCount }}</span></sc-if>
-              </div>
+              <a href="{{ myGroupWa }}" target="_blank" rel="noopener" style="margin-top:17px;background:#25D366;border-radius:11px;padding:13px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;color:#0B1530;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px" style-hover="background:#1ebe5a">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#0B1530"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.6-5.8c-.300-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.1-.6 0a6.7 6.7 0 0 1-2-1.2 7.5 7.5 0 0 1-1.4-1.7c-.1-.3 0-.4.1-.5l.4-.5.2-.3v-.4l-.8-2c-.2-.4-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 2.9 2.9 0 0 0-.9 2.2 5 5 0 0 0 1.1 2.6 11.4 11.4 0 0 0 4.4 3.9c2 .8 2.1.5 2.5.5a2.5 2.5 0 0 0 1.6-1.2 2 2 0 0 0 .2-1.2c-.1-.1-.3-.2-.5-.3z"/></svg>
+                WhatsApp skupina
+              </a>
             </div>
           </div>
 
@@ -326,7 +340,7 @@
                   <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">{{ r.time }}</span>
                 </div>
                 <div style="display:flex;align-items:center;gap:6px;margin-top:5px">
-                  <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Vede</span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">U stolu</span>
                   <span style="font-size:12px;font-weight:600;color:#fff;background:{{ r.leaderColor }};padding:3px 9px;border-radius:20px">{{ r.leader }}</span>
                 </div>
               </div>
@@ -460,8 +474,8 @@
 
       <!-- ============ DETAIL SHEET ============ -->
       <sc-if value="{{ hasDetail }}" hint-placeholder-val="{{ false }}">
-      <div onClick="{{ closeDetail }}" style="position:absolute;inset:0;z-index:70;background:rgba(8,15,34,.5);backdrop-filter:blur(3px);display:flex;align-items:flex-end">
-        <div onClick="{{ stop }}" style="width:100%;max-height:92%;background:#fff;border-radius:24px 24px 0 0;overflow-y:auto;animation:dhsheet .26s cubic-bezier(.2,.8,.2,1)" class="dhscroll">
+      <div onClick="{{ closeDetail }}" style="position:absolute;inset:0;z-index:70;background:rgba(8,15,34,.5);backdrop-filter:blur(3px);display:flex;flex-direction:column;justify-content:flex-end">
+        <div onClick="{{ stop }}" style="width:100%;max-height:92%;background:#fff;border-radius:24px 24px 0 0;overflow-y:auto;" class="dhscroll">
           <div style="position:sticky;top:0;background:#fff;padding:11px 0 0;display:flex;justify-content:center;z-index:2"><div style="width:38px;height:4px;border-radius:20px;background:#d7dce6"></div></div>
 
           <!-- PERSON / COMPANY -->
@@ -506,11 +520,14 @@
               <div style="font-weight:600;font-size:14px;color:var(--navy)">{{ dp.contactName }}</div>
               <div style="font-size:12px;color:var(--muted);margin-top:1px">{{ dp.contactRole }}</div>
               <div style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--blue);margin-top:6px;word-break:break-all">{{ dp.contactEmail }}</div>
+              <sc-if value="{{ dp.hasWeb }}" hint-placeholder-val="{{ false }}">
+                <a href="{{ dp.webUrl }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;margin-top:11px;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13px;color:var(--navy);text-decoration:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18"/></svg>{{ dp.web }} ↗</a>
+              </sc-if>
             </div>
             </sc-if>
 
             <div style="display:flex;gap:10px;margin-top:20px">
-              <div onClick="{{ dp.message }}" style="flex:1;background:var(--navy);color:#fff;border-radius:12px;padding:14px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;cursor:pointer" style-hover="background:#2B5CC4">Napsat zprávu</div>
+              <div onClick="{{ dp.message }}" style="flex:1;background:var(--navy);color:#fff;border-radius:12px;padding:14px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;cursor:pointer" style-hover="background:#2B5CC4">{{ dp.msgLabel }}</div>
               <div onClick="{{ dp.connect }}" style="flex:none;width:52px;background:var(--blueSoft);color:var(--blue);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer" style-hover="background:#d9e4f8"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></div>
             </div>
           </div>
@@ -545,7 +562,7 @@
 
       <!-- ============ CHAT SHEET ============ -->
       <sc-if value="{{ chatOpen }}" hint-placeholder-val="{{ false }}">
-      <div style="position:absolute;inset:0;z-index:80;background:var(--paper);display:flex;flex-direction:column;animation:dhsheet .26s cubic-bezier(.2,.8,.2,1)">
+      <div style="position:absolute;inset:0;z-index:80;background:var(--paper);display:flex;flex-direction:column;">
         <div style="flex:none;background:#13234E;color:#fff;padding:34px 16px 13px;display:flex;align-items:center;gap:11px">
           <div onClick="{{ closeChat }}" style="flex:none;width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></div>
           <div style="flex:none;width:38px;height:38px;border-radius:11px;background:{{ myGroupColor }};display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;color:#0B1530">{{ myGroupNum }}</div>
@@ -572,31 +589,106 @@
       </div>
       </sc-if>
 
-      <!-- ============ QR BADGE ============ -->
+      <!-- ============ NETWORKING HUB ============ -->
       <sc-if value="{{ badgeOpen }}" hint-placeholder-val="{{ false }}">
-      <div onClick="{{ closeBadge }}" style="position:absolute;inset:0;z-index:85;background:rgba(8,15,34,.55);backdrop-filter:blur(3px);display:flex;align-items:flex-end">
-        <div onClick="{{ stop }}" style="width:100%;background:#fff;border-radius:24px 24px 0 0;animation:dhsheet .26s cubic-bezier(.2,.8,.2,1);padding-bottom:24px">
-          <div style="padding:11px 0 0;display:flex;justify-content:center"><div style="width:38px;height:4px;border-radius:20px;background:#d7dce6"></div></div>
-          <div style="padding:14px 20px 0">
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:14px"><span style="width:16px;height:1px;background:var(--green)"></span>Moje vstupenka</div>
-            <div style="border-radius:20px;overflow:hidden;background:radial-gradient(120% 130% at 85% 5%,#1B2D5E 0%,#0E1B3C 55%,#0B1530 100%);color:#fff;padding:22px;position:relative">
-              <div style="position:absolute;right:-14px;top:-14px;width:70px;height:70px;opacity:.5"><div style="position:absolute;inset:0;clip-path:polygon(50% 0,100% 25%,50% 50%,0 25%);background:#2B5CC4"></div><div style="position:absolute;inset:0;clip-path:polygon(0 25%,50% 50%,50% 100%,0 75%);background:#1C2F63"></div><div style="position:absolute;inset:0;clip-path:polygon(100% 25%,50% 50%,50% 100%,100% 75%);background:#8CAA72"></div></div>
-              <div style="position:relative;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:#7FA6F0;font-weight:600">{{ eventName }}</div>
-              <div style="position:relative;margin-top:13px">
-                <div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:21px;line-height:1.1">{{ badgeName }}</div>
-                <div style="font-size:12.5px;color:#9DABCB;margin-top:3px">{{ badgeCompany }}</div>
-                <span style="display:inline-block;margin-top:9px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#0B1530;background:{{ myGroupColor }};padding:4px 10px;border-radius:20px;font-weight:600">{{ myGroupLabel }}</span>
+      <div onClick="{{ closeBadge }}" style="position:absolute;inset:0;z-index:85;background:rgba(8,15,34,.55);backdrop-filter:blur(3px);display:flex;flex-direction:column;justify-content:flex-end">
+        <div onClick="{{ stop }}" style="width:100%;max-height:90%;background:#fff;border-radius:24px 24px 0 0;;display:flex;flex-direction:column">
+          <div style="flex:none;padding:11px 0 0;display:flex;justify-content:center"><div style="width:38px;height:4px;border-radius:20px;background:#d7dce6"></div></div>
+          <div style="flex:none;padding:9px 18px 0;display:flex;align-items:center;justify-content:space-between">
+            <span style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:18px;color:var(--navy)">Networking</span>
+            <div onClick="{{ closeBadge }}" style="width:30px;height:30px;border-radius:9px;background:var(--mist);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:14px">✕</div>
+          </div>
+          <div style="flex:none;display:flex;gap:6px;background:var(--mist);border:1px solid var(--line);border-radius:11px;padding:4px;margin:13px 18px">
+            <div onClick="{{ setVizitka }}" style="{{ vizStyle }}">Moje vizitka</div>
+            <div onClick="{{ setSkener }}" style="{{ scanStyle }}">Skenovat</div>
+            <div onClick="{{ setKontakty }}" style="{{ contStyle }}">Kontakty</div>
+          </div>
+          <div class="dhscroll" style="flex:1;min-height:0;overflow-y:auto;padding:2px 18px 22px">
+
+            <!-- VIZITKA -->
+            <sc-if value="{{ tabVizitka }}" hint-placeholder-val="{{ true }}">
+              <sc-if value="{{ meReady }}" hint-placeholder-val="{{ true }}">
+                <div style="border-radius:20px;overflow:hidden;background:radial-gradient(120% 130% at 85% 5%,#1B2D5E 0%,#0E1B3C 55%,#0B1530 100%);color:#fff;padding:22px;position:relative">
+                  <div style="position:absolute;right:-14px;top:-14px;width:70px;height:70px;opacity:.5"><div style="position:absolute;inset:0;clip-path:polygon(50% 0,100% 25%,50% 50%,0 25%);background:#2B5CC4"></div><div style="position:absolute;inset:0;clip-path:polygon(0 25%,50% 50%,50% 100%,0 75%);background:#1C2F63"></div><div style="position:absolute;inset:0;clip-path:polygon(100% 25%,50% 50%,50% 100%,100% 75%);background:#8CAA72"></div></div>
+                  <div style="position:relative;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:#7FA6F0;font-weight:600">{{ eventName }} · vizitka</div>
+                  <div style="position:relative;margin-top:13px">
+                    <div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:21px;line-height:1.1">{{ meName }}</div>
+                    <div style="font-size:12.5px;color:#9DABCB;margin-top:3px">{{ meCompany }}</div>
+                    <span style="display:inline-block;margin-top:9px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#0B1530;background:{{ meGroupColor }};padding:4px 10px;border-radius:20px;font-weight:600">{{ meGroupLabel }}</span>
+                  </div>
+                  <div style="background:#fff;border-radius:16px;padding:14px;margin-top:18px;display:flex;flex-direction:column;align-items:center;gap:8px">
+                    <img src="{{ meQr }}" alt="QR vizitka" style="width:180px;height:180px;display:block">
+                    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.04em;color:#5C6886;text-align:center">Ukaž QR — ostatní si načtou tvůj kontakt</div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:13px">
+                  <a href="{{ meWaUrl }}" target="_blank" rel="noopener" style="flex:1;background:#25D366;color:#0B1530;border-radius:11px;padding:12px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13px;text-decoration:none">WhatsApp</a>
+                  <a href="{{ meLinkedin }}" target="_blank" rel="noopener" style="flex:1;background:#0A66C2;color:#fff;border-radius:11px;padding:12px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13px;text-decoration:none">LinkedIn</a>
+                  <a href="{{ meMailto }}" style="flex:1;background:var(--mist);color:var(--navy);border-radius:11px;padding:12px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13px;text-decoration:none">E‑mail</a>
+                </div>
+                <div onClick="{{ startEdit }}" style="margin-top:9px;border:1px solid var(--line);color:var(--navy);border-radius:11px;padding:12px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13.5px;cursor:pointer" style-hover="border-color:#cdd6e6">Upravit vizitku</div>
+              </sc-if>
+
+              <sc-if value="{{ meEditing }}" hint-placeholder-val="{{ false }}">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:4px 0 10px">Tvoje vizitka</div>
+                <div style="position:relative;margin-bottom:9px">
+                  <input value="{{ meCompanySearch }}" onInput="{{ onMeCompanySearch }}" placeholder="Najdi svou firmu (předvyplní jméno + e‑mail)…" style="width:100%;border:1px solid var(--line);background:var(--mist);border-radius:10px;padding:11px 13px;font-size:13px;color:var(--navy);font-family:'IBM Plex Sans',sans-serif">
+                  <sc-for list="{{ meCompanyResults }}" as="r" hint-placeholder-count="0">
+                    <div onClick="{{ r.pick }}" style="display:flex;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--line);border-top:none;background:#fff;cursor:pointer" style-hover="background:var(--mist)">
+                      <div style="width:28px;height:28px;border-radius:7px;background:{{ r.color }};display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:10px">{{ r.ini }}</div>
+                      <div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:600;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</div><div style="font-size:11px;color:var(--muted)">{{ r.person }}</div></div>
+                    </div>
+                  </sc-for>
+                </div>
+                <input value="{{ fName }}" onInput="{{ onFName }}" placeholder="Jméno a příjmení" style="width:100%;margin-bottom:8px;border:1px solid var(--line);background:var(--mist);border-radius:10px;padding:11px 13px;font-size:13.5px;color:var(--navy);font-family:'IBM Plex Sans',sans-serif">
+                <input value="{{ fCompany }}" onInput="{{ onFCompany }}" placeholder="Firma" style="width:100%;margin-bottom:8px;border:1px solid var(--line);background:var(--mist);border-radius:10px;padding:11px 13px;font-size:13.5px;color:var(--navy);font-family:'IBM Plex Sans',sans-serif">
+                <input value="{{ fEmail }}" onInput="{{ onFEmail }}" placeholder="E‑mail" style="width:100%;margin-bottom:8px;border:1px solid var(--line);background:var(--mist);border-radius:10px;padding:11px 13px;font-size:13.5px;color:var(--navy);font-family:'IBM Plex Sans',sans-serif">
+                <input value="{{ fPhone }}" onInput="{{ onFPhone }}" placeholder="Telefon pro WhatsApp (+420…)" style="width:100%;margin-bottom:8px;border:1px solid var(--line);background:var(--mist);border-radius:10px;padding:11px 13px;font-size:13.5px;color:var(--navy);font-family:'IBM Plex Sans',sans-serif">
+                <input value="{{ fLinkedin }}" onInput="{{ onFLinkedin }}" placeholder="Odkaz na LinkedIn" style="width:100%;margin-bottom:14px;border:1px solid var(--line);background:var(--mist);border-radius:10px;padding:11px 13px;font-size:13.5px;color:var(--navy);font-family:'IBM Plex Sans',sans-serif">
+                <div onClick="{{ saveMe }}" style="background:var(--navy);color:#fff;border-radius:12px;padding:14px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;cursor:pointer" style-hover="background:#2B5CC4">Uložit vizitku</div>
+              </sc-if>
+            </sc-if>
+
+            <!-- SKENER -->
+            <sc-if value="{{ tabSkener }}" hint-placeholder-val="{{ false }}">
+              <div id="t4d-reader" style="width:100%;aspect-ratio:1/1;border-radius:16px;overflow:hidden;background:#0B1530;display:flex;align-items:center;justify-content:center;color:#5E6E92;font-family:'IBM Plex Mono',monospace;font-size:12px">kamera</div>
+              <div onClick="{{ startScan }}" style="margin-top:12px;background:var(--navy);color:#fff;border-radius:12px;padding:14px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px" style-hover="background:#2B5CC4">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M3 3h7v7H3V3zm2 2v3h3V5H5z"/><path d="M14 3h7v7h-7V3zm2 2v3h3V5h-3z"/><path d="M3 14h7v7H3v-7zm2 2v3h3v-3H5z"/><rect x="14" y="14" width="3" height="3"/><rect x="18.5" y="14" width="2.5" height="3"/><rect x="14" y="18.5" width="3" height="2.5"/><rect x="18.5" y="18.5" width="2.5" height="2.5"/></svg>
+                Spustit kameru
               </div>
-              <div style="background:#fff;border-radius:16px;padding:14px;margin-top:18px;display:flex;flex-direction:column;align-items:center;gap:9px">
-                <img src="{{ qrSrc }}" alt="QR vstupenka" style="width:188px;height:188px;display:block">
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.06em;color:#5C6886;text-align:center">T4D-2026 · {{ badgeId }}</div>
+              <sc-if value="{{ scanMsgShow }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:10px;font-size:12.5px;color:var(--muted);text-align:center;line-height:1.5">{{ scanMsg }}</div>
+              </sc-if>
+              <div style="display:flex;align-items:center;gap:10px;margin:18px 0 12px"><span style="flex:1;height:1px;background:var(--line)"></span><span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#aab2c6">nebo přidej ručně</span><span style="flex:1;height:1px;background:var(--line)"></span></div>
+              <div style="display:flex;gap:8px">
+                <input value="{{ manualInput }}" onInput="{{ onManualInput }}" placeholder="wa.me/…, linkedin.com/… nebo e‑mail" style="flex:1;border:1px solid var(--line);background:var(--mist);border-radius:10px;padding:11px 13px;font-size:13px;color:var(--navy);font-family:'IBM Plex Sans',sans-serif">
+                <div onClick="{{ addManual }}" style="flex:none;background:var(--navy);color:#fff;border-radius:10px;padding:11px 16px;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13.5px;cursor:pointer">Přidat</div>
               </div>
-              <div style="position:relative;margin-top:13px;display:flex;align-items:center;gap:8px;justify-content:center">
-                <span style="width:7px;height:7px;border-radius:50%;background:#8CAA72;animation:dhpulse 2.4s infinite"></span>
-                <span style="font-size:12px;color:#C4CFE8">Naskenuj na prezenci nebo pro výměnu kontaktu</span>
-              </div>
-            </div>
-            <div onClick="{{ closeBadge }}" style="margin-top:16px;background:var(--navy);color:#fff;border-radius:12px;padding:14px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;cursor:pointer" style-hover="background:#2B5CC4">Hotovo</div>
+              <div style="font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.5;text-align:center">Tip: funguje i fotoaparát telefonu — namíříš na cizí QR vizitku a otevře se kontakt.</div>
+            </sc-if>
+
+            <!-- KONTAKTY -->
+            <sc-if value="{{ tabKontakty }}" hint-placeholder-val="{{ false }}">
+              <sc-if value="{{ noContacts }}" hint-placeholder-val="{{ true }}">
+                <div style="text-align:center;padding:48px 20px;color:var(--muted);font-size:13.5px;line-height:1.6">Zatím žádné kontakty.<br>Naskenuj cizí QR vizitku v záložce <strong>Skenovat</strong>.</div>
+              </sc-if>
+              <sc-for list="{{ contacts }}" as="c" hint-placeholder-count="0">
+                <div style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px">
+                  <div style="display:flex;align-items:center;gap:12px">
+                    <div style="flex:none;width:42px;height:42px;border-radius:11px;background:{{ c.color }};display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px">{{ c.ini }}</div>
+                    <div style="flex:1;min-width:0"><div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</div><div style="font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.subline }}</div></div>
+                    <div onClick="{{ c.remove }}" style="flex:none;width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#c2cad8;cursor:pointer;font-size:13px">✕</div>
+                  </div>
+                  <div style="display:flex;gap:7px;margin-top:11px">
+                    <sc-if value="{{ c.hasPhone }}" hint-placeholder-val="{{ false }}"><a href="{{ c.waUrl }}" target="_blank" rel="noopener" style="flex:1;background:#25D366;color:#0B1530;border-radius:9px;padding:9px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:12px;text-decoration:none">WhatsApp</a></sc-if>
+                    <sc-if value="{{ c.hasLinkedin }}" hint-placeholder-val="{{ false }}"><a href="{{ c.linkedinUrl }}" target="_blank" rel="noopener" style="flex:1;background:#0A66C2;color:#fff;border-radius:9px;padding:9px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:12px;text-decoration:none">LinkedIn</a></sc-if>
+                    <sc-if value="{{ c.hasEmail }}" hint-placeholder-val="{{ false }}"><a href="{{ c.mailto }}" style="flex:1;background:var(--mist);color:var(--navy);border-radius:9px;padding:9px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:12px;text-decoration:none">E‑mail</a></sc-if>
+                    <a href="{{ c.vcardHref }}" download="kontakt.vcf" style="flex:none;background:var(--navy);color:#fff;border-radius:9px;padding:9px 12px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:12px;text-decoration:none">Uložit</a>
+                  </div>
+                </div>
+              </sc-for>
+            </sc-if>
+
           </div>
         </div>
       </div>
@@ -614,11 +706,12 @@ class Component extends DCLogic {
     this.state = {
       loaded:false, tab:'home', peopleTab:'speakers', mapTab:'areal', progTab:'main',
       fav:{}, pplSearch:'', detail:null, notifOpen:false, chatOpen:false, badgeOpen:false, banner:true,
+      badgeTab:'vizitka', me:null, meEdit:false, meForm:{name:'',company:'',email:'',phone:'',linkedin:''}, meCompanySearch:'', contacts:[], scanMsg:'', scanning:false, manualInput:'',
       chat:[], chatInput:'', unread:2
     };
     this.trackColors = {Keynote:'#1C2F63','Zdravice':'#5C6886','Networking':'#8CAA72','Přestávka':'#9AA4BD','Diskusní stoly':'#6E9152'};
     // safe defaults until module loads
-    this.speakers=[]; this.zbrojari=[]; this.firmy=[]; this.groupsData=[]; this.partners=[];
+    this.speakers=[]; this.zbrojari=[]; this.firmy=[]; this.groupsData=[]; this.partners=[]; this.waAll='';
     this.program={mainStage:[],networking:[]};
     this.myGroup={num:'',label:'Skupina',color:'#6E9152',soft:'#ECF1E5',range:'',members:[],rounds:[]};
     this.demoUser={id:'',name:'Účastník',company:'',ini:'··',color:'#2B5CC4',group:0};
@@ -632,6 +725,7 @@ class Component extends DCLogic {
       this.firmy = d.companies;
       this.groupsData = d.groups;
       this.partners = d.partners || [];
+      this.waAll = (d.meta && d.meta.waAll) || '';
       this.program = d.program;
       this.demoUser = d.demoUser;
       this.myGroup = d.groups.find(g=>g.mine) || d.groups[0];
@@ -643,7 +737,11 @@ class Component extends DCLogic {
         {id:3,who:(mem[1]?mem[1].person:'Účastník'),ini:(mem[1]?mem[1].ini:'??'),col:(mem[1]?mem[1].color:'#3E7CA8'),text:'Můžeme se po prvním kole domluvit na konkrétní spolupráci?'},
         {id:4,who:'Tereza Marková · facilitátorka',ini:'TM',col:'#2B5CC4',text:'Jasně. Rozpis všech tří kol máte v appce v záložce Skupiny.'}
       ];
-      this.setState({loaded:true, chat:seed});
+      let me=null, contacts=[];
+      try{ me=JSON.parse(localStorage.getItem('t4d_me_v1')||'null'); }catch(e){}
+      try{ contacts=JSON.parse(localStorage.getItem('t4d_contacts_v1')||'[]'); }catch(e){}
+      if(!me){ const du=d.demoUser; me={name:du.name,company:du.company,email:du.email,phone:'',linkedin:''}; }
+      this.setState({loaded:true, chat:seed, me, contacts, meForm:{...me}});
     }catch(e){ console.error('t4d-data load failed', e); this.setState({loaded:true}); }
   }
   go(tab){ return ()=>this.setState({tab, detail:null, notifOpen:false, chatOpen:false, badgeOpen:false}); }
@@ -699,18 +797,18 @@ class Component extends DCLogic {
         if(t==='speaker'){ const p=this.speakers.find(x=>x.id===s.detail.id)||{};
           dp={ ini:p.ini, color:p.color, name:p.name, sub:(p.role||'')+' · '+(p.org||''), kindLabel:'Speaker', avatarRadius:'50%',
             chips:[{k:'Role',v:p.role},{k:'Téma',v:p.tag}], bodyLabel:'Bio', body:p.bio,
-            hasLooking:false, hasSession:!!p.sessTitle, sessionTitle:p.sessTitle, sessionWhen:p.sessWhen, hasContact:false,
-            message:()=>this.setState({detail:null,chatOpen:true,tab:'groups'}), connect:()=>this.setState({detail:null}) };
+            hasLooking:false, hasSession:!!p.sessTitle, sessionTitle:p.sessTitle, sessionWhen:p.sessWhen, hasContact:false, msgLabel:'Zavřít',
+            message:()=>this.setState({detail:null}), connect:()=>this.setState({detail:null}) };
         } else if(t==='zbrojar'){ const p=this.zbrojari.find(x=>x.id===s.detail.id)||{};
           dp={ ini:p.ini, color:p.color, name:p.name, sub:p.makes, kindLabel:'Obranná firma', avatarRadius:'13px',
             chips:[{k:'Země',v:p.country},{k:'Role',v:'Leader stolů'}], bodyLabel:'Profil', body:p.desc,
-            hasLooking:true, looking:p.looking, hasSession:false, hasContact:false,
-            message:()=>this.setState({detail:null,chatOpen:true,tab:'groups'}), connect:()=>this.setState({detail:null}) };
-        } else { const p=this.firmy.find(x=>x.id===s.detail.id)||{};
+            hasLooking:true, looking:p.looking, hasSession:false, hasContact:false, msgLabel:'Zavřít',
+            message:()=>this.setState({detail:null}), connect:()=>this.setState({detail:null}) };
+        } else { const p=this.firmy.find(x=>x.id===s.detail.id)||{}; const dom=this.webFromEmail(p.email);
           dp={ ini:p.ini, color:p.color, name:p.name, sub:p.cat, kindLabel:'Účastník · firma', avatarRadius:'13px',
             chips:[{k:'Kategorie',v:p.cat},{k:'Skupina',v:'Skupina '+p.grp}], bodyLabel:'Medailonek', body:p.desc,
-            hasLooking:false, hasSession:false, hasContact:true, contactName:p.person, contactRole:p.role, contactEmail:p.email,
-            message:()=>this.setState({detail:null,chatOpen:true,tab:'groups'}), connect:()=>this.setState({detail:null}) };
+            hasLooking:false, hasSession:false, hasContact:true, contactName:p.person, contactRole:p.role, contactEmail:p.email, hasWeb:!!dom, web:dom, webUrl:(dom?'https://'+dom:''), msgLabel:'Napsat e‑mail',
+            message:()=>{ if(p.email) window.open('mailto:'+p.email,'_blank'); }, connect:()=>this.setState({detail:null}) };
         }
       } else {
         detailIsSession=true;
@@ -751,11 +849,15 @@ class Component extends DCLogic {
     const notifications=[
       {id:'n1',color:'#6E9152',title:'Jsi v '+mg.label,text:'Rozpis: 3 kola diskusních stolů přes zasedačky '+(mg.rounds||[]).map(r=>r.room).join(', ')+'.',time:'před 5 min', action:()=>this.setState({notifOpen:false,tab:'groups'})},
       {id:'n2',color:'#2B5CC4',title:'Program začíná v 10:00',text:'Zahajovací zdravice — Hlavní stage.',time:'09:45', action:()=>this.setState({notifOpen:false,tab:'program',progTab:'main'})},
-      {id:'n3',color:'#8CAA72',title:'Nová zpráva ve skupině',text:'Tereza Marková: Rozpis kol máte v záložce Skupiny.',time:'09:30', action:()=>this.setState({notifOpen:false,chatOpen:true,tab:'groups'})},
+      {id:'n3',color:'#25D366',title:'WhatsApp skupina je aktivní',text:'Skupinový chat běží na WhatsAppu — otevři v záložce Skupiny.',time:'09:30', action:()=>this.setState({notifOpen:false,tab:'groups'})},
       {id:'n4',color:'#C2410C',title:'1. kolo diskusních stolů',text:'Začíná 10:20. Najdi svou zasedačku v záložce Skupiny.',time:'10:10', action:()=>this.setState({notifOpen:false,tab:'groups'})}
     ];
 
     const next=this.program.mainStage[0]||{start:'10:00',title:'Zahajovací zdravice'};
+    const meObj=s.me||{}; const meCompanyObj=this.firmy.find(x=>x.name===meObj.company);
+    const meGroupLabel=meCompanyObj?('Skupina '+meCompanyObj.grp):''; const meGroupColor=meCompanyObj?(groupColors[meCompanyObj.grp]||'#6E9152'):'#6E9152';
+    const meContacts=(s.contacts||[]).map(c=>({...c, waUrl:this.waUrl(c.phone), hasPhone:!!c.phone, hasLinkedin:!!c.linkedin, hasEmail:!!c.email, mailto:'mailto:'+c.email, linkedinUrl:c.linkedin, vcardHref:'data:text/vcard;charset=utf-8,'+encodeURIComponent(this.vcard(c)), subline:(c.company||c.phone||c.email||''), remove:()=>this.removeContact(c.id)}));
+    const meCompanyResults=(s.meCompanySearch||'').trim()? this.firmy.filter(c=>(c.name+' '+(c.person||'')).toLowerCase().includes(s.meCompanySearch.trim().toLowerCase())).slice(0,5).map(c=>({id:c.id,name:c.name,person:c.person,color:c.color,ini:c.ini,pick:()=>this.pickCompany(c)})) : [];
 
     return {
       rootRef:this.rootRef, accentVar, topBg, topInk, topLine, bellBg,
@@ -767,10 +869,24 @@ class Component extends DCLogic {
       toggleNotif:()=>this.setState(st=>({notifOpen:!st.notifOpen,badgeOpen:false})), notifOpen:s.notifOpen, hasNotif:true, notifications, bellStroke: dark?'#fff':'#13234E',
       stop:(e)=>e.stopPropagation(),
       showBanner:s.banner && (this.props.showMissionBanner!==false), dismissBanner:()=>this.setState({banner:false}),
-      // badge
-      openBadge:()=>this.setState({badgeOpen:true,notifOpen:false}), closeBadge:()=>this.setState({badgeOpen:false}), badgeOpen:s.badgeOpen,
-      badgeName:this.demoUser.name||'Účastník', badgeCompany:this.demoUser.company||'', badgeId:(this.demoUser.id||'a000').toUpperCase(),
-      qrSrc:'https://api.qrserver.com/v1/create-qr-code/?size=420x420&margin=0&color=13234E&bgcolor=FFFFFF&data='+encodeURIComponent('https://tech4defence.cz/u/'+(this.demoUser.id||'guest')),
+      // networking hub
+      openBadge:()=>this.setState({badgeOpen:true,notifOpen:false,badgeTab:'vizitka'}),
+      closeBadge:()=>{ this.stopScan(); this.setState({badgeOpen:false}); }, badgeOpen:s.badgeOpen,
+      setVizitka:()=>{ this.stopScan(); this.setState({badgeTab:'vizitka'}); }, setSkener:()=>this.setState({badgeTab:'skener'}), setKontakty:()=>{ this.stopScan(); this.setState({badgeTab:'kontakty'}); },
+      tabVizitka:(s.badgeTab==='vizitka'||!s.badgeTab), tabSkener:s.badgeTab==='skener', tabKontakty:s.badgeTab==='kontakty',
+      vizStyle:this.seg(s.badgeTab==='vizitka'||!s.badgeTab), scanStyle:this.seg(s.badgeTab==='skener'), contStyle:this.seg(s.badgeTab==='kontakty'),
+      meReady:(!!s.me && !s.meEdit), meEditing:(!s.me || s.meEdit),
+      meName:(s.me?s.me.name:''), meCompany:(s.me?s.me.company:''), meEmail:(s.me?s.me.email:''), mePhone:(s.me?s.me.phone:''), meLinkedin:(s.me?s.me.linkedin:''),
+      meHasPhone:!!(s.me&&s.me.phone), meHasLinkedin:!!(s.me&&s.me.linkedin), meHasEmail:!!(s.me&&s.me.email),
+      meWaUrl:(s.me?this.waUrl(s.me.phone):''), meMailto:(s.me?'mailto:'+s.me.email:''), meQr:(s.me?this.qrFromMe(s.me):''), meGroupLabel, meGroupColor,
+      startEdit:()=>this.setState({meEdit:true, meForm:{...(s.me||{name:'',company:'',email:'',phone:'',linkedin:''})}}),
+      fName:s.meForm.name, fCompany:s.meForm.company, fEmail:s.meForm.email, fPhone:s.meForm.phone, fLinkedin:s.meForm.linkedin,
+      onFName:(e)=>this.setState({meForm:{...this.state.meForm,name:e.target.value}}), onFCompany:(e)=>this.setState({meForm:{...this.state.meForm,company:e.target.value}}),
+      onFEmail:(e)=>this.setState({meForm:{...this.state.meForm,email:e.target.value}}), onFPhone:(e)=>this.setState({meForm:{...this.state.meForm,phone:e.target.value}}), onFLinkedin:(e)=>this.setState({meForm:{...this.state.meForm,linkedin:e.target.value}}),
+      saveMe:()=>this.saveMe(), meCompanySearch:s.meCompanySearch, onMeCompanySearch:(e)=>this.setState({meCompanySearch:e.target.value}), meCompanyResults,
+      startScan:()=>this.startScan(), scanMsg:s.scanMsg, scanMsgShow:!!s.scanMsg,
+      manualInput:s.manualInput, onManualInput:(e)=>this.setState({manualInput:e.target.value}), addManual:()=>this.addManual(),
+      contacts:meContacts, noContacts:(s.contacts||[]).length===0,
       // org info
       orgInfo:[
         {icon:'i',color:'#2B5CC4',label:'Registrace',value:'Vstup Celetná 19 · od 9:30'},
@@ -778,7 +894,7 @@ class Component extends DCLogic {
         {icon:'c',color:'#3E7CA8',label:'Občerstvení',value:'Přestávka 11:40 · networking oběd 12:40'},
         {icon:'?',color:'#46618F',label:'Kontakt na organizátory',value:'Tým CzechInvest · helpdesk u registrace'}
       ],
-      partners:this.partners,
+      partners:this.partners, waAll:this.waAll, hasWaAll:!!this.waAll,
       // program
       progMainStyle:this.seg(s.progTab==='main'), progNetStyle:this.seg(s.progTab==='networking'),
       setProgMain:()=>this.setState({progTab:'main'}), setProgNet:()=>this.setState({progTab:'networking'}),
@@ -790,7 +906,7 @@ class Component extends DCLogic {
       tabSpk:s.peopleTab==='speakers', tabZbr:s.peopleTab==='zbrojari', tabFirm:s.peopleTab==='firmy',
       speakers, zbrojari, firmy, peopleEmpty:curEmpty, firmCount:this.firmy.length, firmShownCount:firmy.length,
       // groups
-      myGroupNum:mg.num, myGroupLabel:mg.label, myGroupColor:mg.color, myGroupRange:mg.range,
+      myGroupNum:mg.num, myGroupLabel:mg.label, myGroupColor:mg.color, myGroupRange:mg.range, myGroupWa:(mg.wa||'#'),
       myMembersTop, myMembersCount:(mg.members||[]).length, myRounds:mg.rounds||[],
       allGroups:this.groupsData,
       openChat:()=>this.setState({chatOpen:true,unread:0}), unread:s.unread>0, unreadCount:s.unread,
@@ -816,6 +932,35 @@ class Component extends DCLogic {
     const t=this.state.chatInput.trim(); if(!t) return;
     this.setState(st=>({ chat:[...st.chat,{id:Date.now(),who:'Ty',ini:'TY',col:'#2B5CC4',text:t}], chatInput:'' }));
   }
+  digits(p){ return (p||'').replace(/[^\d]/g,''); }
+  waUrl(p){ const d=this.digits(p); return d?('https://wa.me/'+d):''; }
+  vcard(me){ return ['BEGIN:VCARD','VERSION:3.0','FN:'+(me.name||''),'ORG:'+(me.company||''),(me.email?'EMAIL:'+me.email:''),(me.phone?'TEL:'+me.phone:''),(me.linkedin?'URL:'+me.linkedin:''),'END:VCARD'].filter(Boolean).join('\n'); }
+  qrFromMe(me){ return 'https://api.qrserver.com/v1/create-qr-code/?size=440x440&margin=0&color=13234E&bgcolor=FFFFFF&data='+encodeURIComponent(this.vcard(me)); }
+  saveMe(){ const me={...this.state.meForm}; try{ localStorage.setItem('t4d_me_v1',JSON.stringify(me)); }catch(e){} this.setState({me, meEdit:false}); }
+  pickCompany(c){ this.setState(st=>({ meForm:{...st.meForm, name:(c.person||st.meForm.name), company:c.name, email:(c.email||st.meForm.email)}, meCompanySearch:'' })); }
+  persistContacts(list){ try{ localStorage.setItem('t4d_contacts_v1',JSON.stringify(list)); }catch(e){} }
+  parseContact(txt){ if(!txt) return null; txt=String(txt).trim();
+    if(/BEGIN:VCARD/i.test(txt)){ const g=(re)=>{const m=txt.match(re);return m?m[1].trim():'';};
+      return { name:g(/FN:(.*)/i), company:g(/ORG:(.*)/i), email:g(/EMAIL[^:]*:(.*)/i), phone:g(/TEL[^:]*:(.*)/i), linkedin:g(/URL:(.*)/i) }; }
+    if(/wa\.me\/|whatsapp|^\+?[\d\s]{6,}$/i.test(txt)){ return {name:'',company:'',phone:this.digits(txt),email:'',linkedin:''}; }
+    if(/linkedin\.com/i.test(txt)){ return {name:'',company:'',phone:'',email:'',linkedin:(/^https?:/i.test(txt)?txt:'https://'+txt)}; }
+    if(/^mailto:/i.test(txt)||/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(txt)){ return {name:'',company:'',phone:'',email:txt.replace(/^mailto:/i,''),linkedin:''}; }
+    return {name:txt.slice(0,48),company:'',phone:'',email:'',linkedin:''}; }
+  addContact(c){ if(!c) return; const base=(c.name||c.company||'Kontakt').trim();
+    const ini=(base.split(/\s+/).slice(0,2).map(w=>w[0]).join('')||'?').toUpperCase();
+    const colors=['#2B5CC4','#1C2F63','#6E9152','#3E7CA8','#46618F']; const color=colors[Math.floor(Math.random()*colors.length)];
+    const item={id:Date.now()+''+Math.floor(Math.random()*999), name:base, company:c.company||'', phone:c.phone||'', email:c.email||'', linkedin:c.linkedin||'', ini, color};
+    this.setState(st=>{ const list=[item,...st.contacts]; this.persistContacts(list); return {contacts:list}; }); }
+  removeContact(id){ this.setState(st=>{ const list=st.contacts.filter(x=>x.id!==id); this.persistContacts(list); return {contacts:list}; }); }
+  addManual(){ const c=this.parseContact(this.state.manualInput); if(c){ this.addContact(c); this.setState({manualInput:'', badgeTab:'kontakty'}); } }
+  startScan(){ const el=document.getElementById('t4d-reader'); if(!window.Html5Qrcode||!el){ this.setState({scanMsg:'Skener není dostupný — zadej odkaz ručně níže nebo použij fotoaparát telefonu.'}); return; }
+    try{ this.stopScan(); this._scanner=new window.Html5Qrcode('t4d-reader');
+      this._scanner.start({facingMode:'environment'},{fps:10,qrbox:200},(txt)=>{ this.stopScan(); const c=this.parseContact(txt); this.addContact(c); this.setState({badgeTab:'kontakty',scanMsg:''}); }, ()=>{})
+        .then(()=>this.setState({scanMsg:'Namiř na QR vizitku…',scanning:true}))
+        .catch(()=>this.setState({scanMsg:'Kameru se nepodařilo spustit — zadej odkaz ručně níže.'}));
+    }catch(e){ this.setState({scanMsg:'Kameru se nepodařilo spustit — zadej odkaz ručně níže.'}); } }
+  stopScan(){ if(this._scanner){ try{ this._scanner.stop().then(()=>{try{this._scanner.clear();}catch(e){}}).catch(()=>{}); }catch(e){} this._scanner=null; } this.setState({scanning:false}); }
+  webFromEmail(email){ if(!email||!/@/.test(email)) return ''; const d=email.split('@')[1].toLowerCase().trim(); const free=['seznam.cz','gmail.com','email.cz','centrum.cz','post.cz','volny.cz','atlas.cz','outlook.com','hotmail.com','yahoo.com','icloud.com']; return free.indexOf(d)>=0?'':d; }
 }
 </script>
 </body>

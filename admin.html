@@ -194,11 +194,11 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:#2B5CC4 !impor
             <div style="margin-left:auto;display:flex;align-items:center;gap:7px;background:var(--navy);color:#fff;border-radius:10px;padding:10px 15px;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13px;cursor:pointer" style-hover="background:#2B5CC4">Export CSV</div>
           </div>
           <div style="background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden">
-            <div style="display:grid;grid-template-columns:2.4fr 1.4fr 1.6fr 1.8fr 0.8fr;gap:12px;padding:12px 18px;background:var(--mist);border-bottom:1px solid var(--line);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600">
-              <div>Firma</div><div>Kategorie</div><div>Kontakt</div><div>E‑mail</div><div>Skupina</div>
+            <div style="display:grid;grid-template-columns:2.1fr 1.2fr 1.4fr 1.6fr 0.8fr 0.85fr;gap:12px;padding:12px 18px;background:var(--mist);border-bottom:1px solid var(--line);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600">
+              <div>Firma</div><div>Kategorie</div><div>Kontakt</div><div>E‑mail</div><div>Skupina</div><div>Kód</div>
             </div>
             <sc-for list="{{ firmRows }}" as="c" hint-placeholder-count="12">
-              <div class="t4row" style="display:grid;grid-template-columns:2.4fr 1.4fr 1.6fr 1.8fr 0.8fr;gap:12px;padding:13px 18px;border-bottom:1px solid var(--mist);align-items:center">
+              <div class="t4row" style="display:grid;grid-template-columns:2.1fr 1.2fr 1.4fr 1.6fr 0.8fr 0.85fr;gap:12px;padding:13px 18px;border-bottom:1px solid var(--mist);align-items:center">
                 <div style="display:flex;align-items:center;gap:11px;min-width:0">
                   <div style="flex:none;width:32px;height:32px;border-radius:8px;background:{{ c.color }};display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:11px;color:#fff">{{ c.ini }}</div>
                   <span style="font-weight:600;font-size:13.5px;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</span>
@@ -207,6 +207,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:#2B5CC4 !impor
                 <div style="font-size:12.5px;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.person }}</div>
                 <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--blue);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.email }}</div>
                 <div><span style="font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;color:{{ c.grpColor }};background:{{ c.grpSoft }};padding:4px 9px;border-radius:6px">Sk. {{ c.grp }}</span></div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted)">{{ c.code }}</div>
               </div>
             </sc-for>
           </div>
@@ -238,7 +239,8 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:#2B5CC4 !impor
           </div>
 
           <!-- rotation matrix -->
-          <div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:16px;color:var(--navy);margin-bottom:12px">Schéma rotace diskusních stolů</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:16px;color:var(--navy);margin-bottom:4px">Schéma rotace diskusních stolů</div>
+          <p style="font-size:12.5px;color:var(--muted);margin:0 0 12px">Zbrojaři i skupiny se mezi zasedačkami střídají — buňka ukazuje, který zbrojař je u stolu v daném kole.</p>
           <div style="background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden">
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;background:var(--ink);color:#fff">
               <div style="padding:13px 16px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#8FA0C6"></div>
@@ -308,8 +310,12 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:#2B5CC4 !impor
               <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:32px;color:var(--navy);line-height:1">{{ checkedCount }}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-top:2px">/ {{ firmTotal }}</div></div>
             </div>
             <div style="font-size:13px;color:var(--muted);margin-top:14px">{{ checkPct }} % účastníků odbaveno</div>
-            <div onClick="{{ scanQr }}" style="margin-top:18px;background:var(--navy);color:#fff;border-radius:12px;padding:14px;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px" style-hover="background:#2B5CC4"><svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M3 3h7v7H3V3zm2 2v3h3V5H5z"/><path d="M14 3h7v7h-7V3zm2 2v3h3V5h-3z"/><path d="M3 14h7v7H3v-7zm2 2v3h3v-3H5z"/><rect x="14" y="14" width="3" height="3"/><rect x="18.5" y="14" width="2.5" height="3"/><rect x="14" y="18.5" width="3" height="2.5"/><rect x="18.5" y="18.5" width="2.5" height="2.5"/></svg>Naskenovat QR</div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#aab2c6;margin-top:10px">Demo · simuluje sken vstupenky</div>
+            <input value="{{ checkinCode }}" onInput="{{ onCheckinCode }}" onKeyDown="{{ onCheckinKey }}" placeholder="Zadej kód, např. T4D-001" style="width:100%;margin-top:18px;border:1px solid var(--line);background:var(--mist);border-radius:11px;padding:13px 14px;font-family:'IBM Plex Mono',monospace;font-size:15px;letter-spacing:.06em;color:var(--navy);text-align:center;text-transform:uppercase">
+            <div onClick="{{ doCheckin }}" style="margin-top:10px;background:var(--navy);color:#fff;border-radius:12px;padding:13px;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px" style-hover="background:#2B5CC4"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Odbavit účastníka</div>
+            <sc-if value="{{ checkinMsgShow }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:11px;font-size:12.5px;font-weight:600;color:{{ checkinMsgColor }};background:{{ checkinMsgBg }};border-radius:9px;padding:9px 11px;line-height:1.4">{{ checkinMsg }}</div>
+            </sc-if>
+            <div onClick="{{ scanQr }}" style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#aab2c6;margin-top:13px;cursor:pointer">+ náhodný (demo)</div>
           </div>
           <div style="background:#fff;border:1px solid var(--line);border-radius:15px;padding:22px">
             <div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:16px;color:var(--navy);margin-bottom:6px">Poslední check‑iny</div>
@@ -348,7 +354,7 @@ class Component extends DCLogic {
         {id:1,color:'#2B5CC4',title:'Vítejte na TECH4DEFENCE',text:'Registrace otevřena u vstupu Celetná 19. Program začíná v 10:00.',meta:'Všichni · 09:15 · Tereza M.'},
         {id:2,color:'#6E9152',title:'Rozřazení do skupin',text:'Vaši skupinu a rozpis diskusních stolů najdete v aplikaci.',meta:'Všichni · 09:30 · Petra N.'}
       ],
-      checkins:[], checkedBase:0
+      checkins:[], checkedBase:0, checkinCode:'', checkinMsg:'', checkinOk:false
     };
     this.companies=[]; this.groupsData=[]; this.obranne=[]; this.speakers=[]; this.organizers=[];
     this.program={mainStage:[],networking:[]};
@@ -393,6 +399,16 @@ class Component extends DCLogic {
       this.setState({loginError:true});
     }
   }
+  code(c){ return 'T4D-'+String(parseInt(String(c.id||'').replace(/\D/g,'')||'0')+1).padStart(3,'0'); }
+  doCheckin(){
+    const raw=(this.state.checkinCode||'').trim().toUpperCase();
+    if(!raw) return;
+    const c=this.companies.find(x=>this.code(x).toUpperCase()===raw);
+    if(!c){ this.setState({checkinMsg:'Neplatný kód: '+raw, checkinOk:false}); return; }
+    if(this.state.checkins.find(x=>x.id===c.id)){ this.setState({checkinMsg:c.name+' už je odbaven/a', checkinOk:false, checkinCode:''}); return; }
+    const now=new Date(); const time=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+    this.setState(st=>({ checkins:[{id:c.id,name:c.name,ini:c.ini,color:c.color,person:c.person,grp:c.grp,time},...st.checkins], checkinCode:'', checkinMsg:'Odbaven: '+c.name, checkinOk:true }));
+  }
   scanQr(){
     const pool=this.companies.filter(c=>!this.state.checkins.find(x=>x.id===c.id));
     if(!pool.length) return;
@@ -418,7 +434,7 @@ class Component extends DCLogic {
     // firmy
     const q=s.firmSearch.trim().toLowerCase();
     const filtered=this.companies.filter(c=>!q||(c.name+' '+c.cat+' '+c.person+' '+c.email).toLowerCase().includes(q));
-    const firmRows=filtered.map(c=>({...c, grpColor:this.groupColor(c.grp), grpSoft:this.groupSoft(c.grp)}));
+    const firmRows=filtered.map(c=>({...c, grpColor:this.groupColor(c.grp), grpSoft:this.groupSoft(c.grp), code:this.code(c)}));
     // groups
     const groupCards=this.groupsData.map(g=>({num:g.num,label:g.label,color:g.color,soft:g.soft,count:g.count,range:g.range}));
     const matrix=this.rota.map(r=>({ room:r.room, cells:r.cells.map(c=>({ leader:c[0], color:this.leaderColors[c[0]]||'#13234E', groups:c[1].map(n=>({n, color:this.groupColor(n), soft:this.groupSoft(n)})) })) }));
@@ -481,7 +497,9 @@ class Component extends DCLogic {
       notifBody:s.notifBody, onNotifBody:(e)=>this.setState({notifBody:e.target.value}),
       sendNotif:()=>this.sendNotif(), sentNotifs:s.sentNotifs,
       // checkin
-      scanQr:()=>this.scanQr(), checkedCount, checkPct:pct, checkDash, checkins:s.checkins, noCheckins:s.checkins.length===0
+      scanQr:()=>this.scanQr(), checkedCount, checkPct:pct, checkDash, checkins:s.checkins, noCheckins:s.checkins.length===0,
+      checkinCode:s.checkinCode, onCheckinCode:(e)=>this.setState({checkinCode:e.target.value}), onCheckinKey:(e)=>{ if(e.key==='Enter') this.doCheckin(); }, doCheckin:()=>this.doCheckin(),
+      checkinMsgShow:!!s.checkinMsg, checkinMsg:s.checkinMsg, checkinMsgColor:(s.checkinOk?'#2f4022':'#9a3412'), checkinMsgBg:(s.checkinOk?'#ECF1E5':'#FBEEE6')
     };
   }
 }
