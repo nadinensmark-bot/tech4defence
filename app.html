@@ -98,6 +98,13 @@
             </div>
           </div>
 
+          <!-- moje vstupenka -->
+          <div onClick="{{ openTicket }}" style="margin:12px 16px 0;background:var(--ink);border-radius:15px;padding:15px 16px;cursor:pointer;display:flex;align-items:center;gap:13px;border-left:3px solid #8CAA72">
+            <div style="flex:none;width:42px;height:42px;border-radius:11px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="#8CAA72"><path d="M3 3h7v7H3V3zm2 2v3h3V5H5z"/><path d="M14 3h7v7h-7V3zm2 2v3h3V5h-3z"/><path d="M3 14h7v7H3v-7zm2 2v3h3v-3H5z"/><rect x="14" y="14" width="3" height="3"/><rect x="18.5" y="14" width="2.5" height="3"/><rect x="14" y="18.5" width="3" height="2.5"/><rect x="18.5" y="18.5" width="2.5" height="2.5"/></svg></div>
+            <div style="flex:1;min-width:0"><div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:#8CAA72;font-weight:600">Vstupenka</div><div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14.5px;color:#fff;margin-top:2px">Moje QR vstupenka</div><div style="font-size:11.5px;color:#9DABCB;margin-top:1px">Ukaž na vstupu · {{ myCode }}</div></div>
+            <span style="flex:none;color:#8CAA72;font-size:18px">›</span>
+          </div>
+
           <!-- next on program -->
           <div onClick="{{ goProgram }}" style="margin:12px 16px 0;background:#fff;border:1px solid var(--line);border-radius:15px;padding:15px 16px;cursor:pointer;display:flex;align-items:center;gap:13px" style-hover="border-color:#cdd6e6">
             <div style="flex:none;width:46px;text-align:center">
@@ -618,7 +625,7 @@
                     <div style="margin-top:12px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9DABCB">Kód pro check‑in: <span style="color:#fff;font-weight:600;letter-spacing:.06em">{{ myCode }}</span></div>
                   </div>
                   <div style="background:#fff;border-radius:16px;padding:14px;margin-top:18px;display:flex;flex-direction:column;align-items:center;gap:8px">
-                    <img src="{{ meQr }}" alt="QR vizitka" style="width:180px;height:180px;display:block">
+                    {{ meQrImg }}
                     <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.04em;color:#5C6886;text-align:center">Ukaž QR — ostatní si načtou tvůj kontakt</div>
                   </div>
                 </div>
@@ -696,6 +703,29 @@
       </div>
       </sc-if>
 
+      <!-- ============ VSTUPENKA (CHECK-IN QR) ============ -->
+      <sc-if value="{{ ticketOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeTicket }}" style="position:absolute;inset:0;z-index:86;background:rgba(8,15,34,.55);backdrop-filter:blur(3px);display:flex;flex-direction:column;justify-content:flex-end">
+        <div onClick="{{ stop }}" style="width:100%;max-height:94%;background:#fff;border-radius:24px 24px 0 0;display:flex;flex-direction:column">
+          <div style="flex:none;padding:11px 0 0;display:flex;justify-content:center"><div style="width:38px;height:4px;border-radius:20px;background:#d7dce6"></div></div>
+          <div class="dhscroll" style="flex:1;min-height:0;overflow-y:auto;padding:14px 20px 22px">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:14px"><span style="width:16px;height:1px;background:var(--green)"></span>Vstupenka — check‑in</div>
+            <div style="border-radius:20px;overflow:hidden;background:radial-gradient(120% 130% at 85% 5%,#1B2D5E 0%,#0E1B3C 55%,#0B1530 100%);color:#fff;padding:22px;text-align:center">
+              <div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:19px">{{ meName }}</div>
+              <div style="font-size:12.5px;color:#9DABCB;margin-top:2px">{{ meCompany }}</div>
+              <span style="display:inline-block;margin-top:9px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#0B1530;background:{{ meGroupColor }};padding:4px 10px;border-radius:20px;font-weight:600">{{ meGroupLabel }}</span>
+              <div style="background:#fff;border-radius:16px;padding:16px;margin-top:16px;display:flex;flex-direction:column;align-items:center;gap:10px">
+                {{ checkinQrImg }}
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600;letter-spacing:.12em;color:#13234E">{{ myCode }}</div>
+              </div>
+              <div style="margin-top:14px;display:flex;align-items:center;gap:8px;justify-content:center"><span style="width:7px;height:7px;border-radius:50%;background:#8CAA72;animation:dhpulse 2.4s infinite"></span><span style="font-size:12px;color:#C4CFE8">Ukaž u registrace — tým QR naskenuje</span></div>
+            </div>
+            <div onClick="{{ closeTicket }}" style="margin-top:16px;background:var(--navy);color:#fff;border-radius:12px;padding:14px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;cursor:pointer">Hotovo</div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
       <!-- ============ PARTICIPANT LOGIN ============ -->
       <sc-if value="{{ needLogin }}" hint-placeholder-val="{{ false }}">
       <div class="dhscroll" style="position:absolute;inset:0;z-index:90;background:radial-gradient(130% 120% at 80% 0%,#1B2D5E 0%,#0E1B3C 48%,#0B1530 100%);color:#fff;display:flex;flex-direction:column;padding:30px 24px 26px;overflow-y:auto">
@@ -710,6 +740,7 @@
           <input value="{{ identEmail }}" onInput="{{ onIdentEmail }}" onKeyDown="{{ onIdentKey }}" placeholder="jmeno@firma.cz" style="width:100%;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);border-radius:11px;padding:13px 14px;font-size:14.5px;color:#fff;font-family:'IBM Plex Sans',sans-serif">
           <sc-if value="{{ identErr }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:#FCA5A5;margin-top:8px;line-height:1.4">E‑mail jsme nenašli. Zkuste jiný, nebo se najděte podle firmy níže.</div></sc-if>
           <div onClick="{{ doIdentify }}" style="margin-top:14px;background:#2B5CC4;color:#fff;border-radius:11px;padding:14px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;cursor:pointer" style-hover="background:#3E72E0">Vstoupit →</div>
+          <div onClick="{{ demoLogin }}" style="margin-top:12px;text-align:center;font-size:13px;color:#8FB6FF;cursor:pointer;font-weight:600">Prohlédnout jako demo účastník →</div>
           <div style="display:flex;align-items:center;gap:10px;margin:20px 0 12px"><span style="flex:1;height:1px;background:rgba(255,255,255,.14)"></span><span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#5E6E92">nebo najděte svou firmu</span><span style="flex:1;height:1px;background:rgba(255,255,255,.14)"></span></div>
           <input value="{{ identSearch }}" onInput="{{ onIdentSearch }}" placeholder="Hledat firmu…" style="width:100%;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);border-radius:11px;padding:12px 14px;font-size:13.5px;color:#fff;font-family:'IBM Plex Sans',sans-serif">
           <sc-for list="{{ identResults }}" as="r" hint-placeholder-count="0">
@@ -736,7 +767,7 @@ class Component extends DCLogic {
       loaded:false, tab:'home', peopleTab:'speakers', mapTab:'areal', progTab:'main',
       fav:{}, pplSearch:'', detail:null, notifOpen:false, chatOpen:false, badgeOpen:false, banner:true,
       badgeTab:'vizitka', me:null, meEdit:false, meForm:{name:'',company:'',email:'',phone:'',linkedin:''}, meCompanySearch:'', contacts:[], scanMsg:'', scanning:false, manualInput:'',
-      identEmail:'', identErr:false, identSearch:'',
+      identEmail:'', identErr:false, identSearch:'', ticketOpen:false,
       chat:[], chatInput:'', unread:2
     };
     this.trackColors = {Keynote:'#1C2F63','Zdravice':'#5C6886','Networking':'#8CAA72','Přestávka':'#9AA4BD','Diskusní stoly':'#6E9152'};
@@ -817,6 +848,7 @@ class Component extends DCLogic {
     const identified = !!(s.me && s.me.verified && meCO);
     const mg = (meCO ? this.groupsData.find(g=>g.num===meCO.grp) : null) || this.groupsData[0] || {num:'',label:'Skupina',color:'#6E9152',soft:'#ECF1E5',range:'',members:[],rounds:[],wa:'#'};
     const myCode = meCO ? this.participantCode(meCO) : '';
+    const checkinQrImg = myCode ? React.createElement('img',{src:'https://api.qrserver.com/v1/create-qr-code/?size=520x520&margin=0&data='+encodeURIComponent(myCode),alt:'Check-in QR',style:{width:'220px',height:'220px',display:'block'}}) : null;
     const myMembersTop=(mg.members||[]).slice(0,6);
 
     // detail
@@ -910,7 +942,7 @@ class Component extends DCLogic {
       meReady:(!!s.me && !s.meEdit), meEditing:(!s.me || s.meEdit),
       meName:(s.me?s.me.name:''), meCompany:(s.me?s.me.company:''), meEmail:(s.me?s.me.email:''), mePhone:(s.me?s.me.phone:''), meLinkedin:(s.me?s.me.linkedin:''),
       meHasPhone:!!(s.me&&s.me.phone), meHasLinkedin:!!(s.me&&s.me.linkedin), meHasEmail:!!(s.me&&s.me.email),
-      meWaUrl:(s.me?this.waUrl(s.me.phone):''), meMailto:(s.me?'mailto:'+s.me.email:''), meQr:(s.me?this.qrFromMe(s.me):''), meGroupLabel, meGroupColor,
+      meWaUrl:(s.me?this.waUrl(s.me.phone):''), meMailto:(s.me?'mailto:'+s.me.email:''), meQr:(s.me?this.qrFromMe(s.me):''), meQrImg:(s.me?React.createElement('img',{src:this.qrFromMe(s.me),alt:'QR vizitka',style:{width:'180px',height:'180px',display:'block'}}):null), meGroupLabel, meGroupColor,
       startEdit:()=>this.setState({meEdit:true, meForm:{...(s.me||{name:'',company:'',email:'',phone:'',linkedin:''})}}),
       fName:s.meForm.name, fCompany:s.meForm.company, fEmail:s.meForm.email, fPhone:s.meForm.phone, fLinkedin:s.meForm.linkedin,
       onFName:(e)=>this.setState({meForm:{...this.state.meForm,name:e.target.value}}), onFCompany:(e)=>this.setState({meForm:{...this.state.meForm,company:e.target.value}}),
@@ -939,11 +971,12 @@ class Component extends DCLogic {
       speakers, zbrojari, firmy, peopleEmpty:curEmpty, firmCount:this.firmy.length, firmShownCount:firmy.length,
       // groups
       myGroupNum:mg.num, myGroupLabel:mg.label, myGroupColor:mg.color, myGroupRange:mg.range, myGroupWa:(mg.wa||'#'),
-      needLogin:!identified, identified, myCode,
+      needLogin:!identified, identified, myCode, checkinQrImg,
+      openTicket:()=>this.setState({ticketOpen:true,notifOpen:false}), closeTicket:()=>this.setState({ticketOpen:false}), ticketOpen:s.ticketOpen,
       identEmail:s.identEmail, onIdentEmail:(e)=>this.setState({identEmail:e.target.value,identErr:false}), doIdentify:()=>this.identifyByEmail(), onIdentKey:(e)=>{ if(e.key==='Enter') this.identifyByEmail(); }, identErr:s.identErr,
       identSearch:s.identSearch, onIdentSearch:(e)=>this.setState({identSearch:e.target.value}),
       identResults:((s.identSearch||'').trim()? this.firmy.filter(c=>(c.name+' '+(c.person||'')+' '+(c.email||'')).toLowerCase().includes(s.identSearch.trim().toLowerCase())).slice(0,6).map(c=>({id:c.id,name:c.name,person:c.person,ini:c.ini,color:c.color,pick:()=>this.setIdentified(c)})):[]),
-      logoutParticipant:()=>this.logoutParticipant(),
+      logoutParticipant:()=>this.logoutParticipant(), demoLogin:()=>this.demoLogin(),
       myMembersTop, myMembersCount:(mg.members||[]).length, myRounds:mg.rounds||[],
       allGroups:this.groupsData,
       openChat:()=>this.setState({chatOpen:true,unread:0}), unread:s.unread>0, unreadCount:s.unread,
@@ -1003,6 +1036,7 @@ class Component extends DCLogic {
     try{ localStorage.setItem('t4d_me_v1',JSON.stringify(me)); }catch(e){} this.setState({me, meForm:{...me}, identErr:false, identEmail:'', identSearch:''}); }
   identifyByEmail(){ const e=(this.state.identEmail||'').trim().toLowerCase(); if(!e) return; const c=this.firmy.find(x=>(x.email||'').toLowerCase()===e); if(c){ this.setIdentified(c); } else { this.setState({identErr:true}); } }
   logoutParticipant(){ try{ localStorage.removeItem('t4d_me_v1'); }catch(e){} this.setState({me:null, badgeOpen:false, identEmail:'', identErr:false, identSearch:''}); }
+  demoLogin(){ const c=this.firmy.find(x=>/Fly4Future/i.test(x.name))||this.firmy[0]; if(c) this.setIdentified(c); }
 }
 </script>
 </body>
