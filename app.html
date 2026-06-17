@@ -637,10 +637,13 @@
                   </div>
                 </div>
                 <div style="display:flex;gap:8px;margin-top:13px">
-                  <a href="{{ meWaUrl }}" target="_blank" rel="noopener" style="flex:1;background:#25D366;color:#0B1530;border-radius:11px;padding:12px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13px;text-decoration:none">WhatsApp</a>
-                  <a href="{{ meLinkedin }}" target="_blank" rel="noopener" style="flex:1;background:#0A66C2;color:#fff;border-radius:11px;padding:12px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13px;text-decoration:none">LinkedIn</a>
+                  <sc-if value="{{ meHasPhone }}" hint-placeholder-val="{{ false }}"><a href="{{ meWaUrl }}" target="_blank" rel="noopener" style="flex:1;background:#25D366;color:#0B1530;border-radius:11px;padding:12px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13px;text-decoration:none">WhatsApp</a></sc-if>
+                  <sc-if value="{{ meHasLinkedin }}" hint-placeholder-val="{{ false }}"><a href="{{ meLinkedin }}" target="_blank" rel="noopener" style="flex:1;background:#0A66C2;color:#fff;border-radius:11px;padding:12px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13px;text-decoration:none">LinkedIn</a></sc-if>
                   <a href="{{ meMailto }}" style="flex:1;background:var(--mist);color:var(--navy);border-radius:11px;padding:12px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13px;text-decoration:none">E‑mail</a>
                 </div>
+                <sc-if value="{{ meNeedsContact }}" hint-placeholder-val="{{ true }}">
+                  <div onClick="{{ startEdit }}" style="margin-top:9px;background:var(--blueSoft);border:1px dashed #9FC0FF;color:var(--blue);border-radius:11px;padding:12px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13px;cursor:pointer">＋ Přidej LinkedIn a telefon na vizitku</div>
+                </sc-if>
                 <div onClick="{{ startEdit }}" style="margin-top:9px;border:1px solid var(--line);color:var(--navy);border-radius:11px;padding:12px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13.5px;cursor:pointer" style-hover="border-color:#cdd6e6">Upravit vizitku</div>
                 <div onClick="{{ logoutParticipant }}" style="margin-top:9px;text-align:center;font-size:12px;color:var(--muted);cursor:pointer">Nejsem to já — odhlásit</div>
               </sc-if>
@@ -980,6 +983,7 @@ class Component extends DCLogic {
       meReady:(!!s.me && !s.meEdit), meEditing:(!s.me || s.meEdit),
       meName:(s.me?s.me.name:''), meCompany:(s.me?s.me.company:''), meEmail:(s.me?s.me.email:''), mePhone:(s.me?s.me.phone:''), meLinkedin:(s.me?s.me.linkedin:''),
       meHasPhone:!!(s.me&&s.me.phone), meHasLinkedin:!!(s.me&&s.me.linkedin), meHasEmail:!!(s.me&&s.me.email),
+      meNeedsContact:!!(s.me && (!s.me.linkedin || !s.me.phone)),
       meWaUrl:(s.me?this.waUrl(s.me.phone):''), meMailto:(s.me?'mailto:'+s.me.email:''), meQr:(s.me?this.qrFromMe(s.me):''), meQrImg:(s.me?React.createElement('img',{src:this.qrFromMe(s.me),alt:'QR vizitka',style:{width:'180px',height:'180px',display:'block'}}):null), meGroupLabel, meGroupColor,
       startEdit:()=>this.setState({meEdit:true, meForm:{...(s.me||{name:'',company:'',email:'',phone:'',linkedin:''})}}),
       fName:s.meForm.name, fCompany:s.meForm.company, fEmail:s.meForm.email, fPhone:s.meForm.phone, fLinkedin:s.meForm.linkedin,
