@@ -371,7 +371,7 @@ class Component extends DCLogic {
       ],
       checkins:[], checkedBase:0, checkinCode:'', checkinMsg:'', checkinOk:false, ciScanMsg:'', ciScanning:false
     };
-    this.companies=[]; this.groupsData=[]; this.obranne=[]; this.speakers=[]; this.organizers=[];
+    this.companies=[]; this.groupsData=[]; this.obranne=[]; this.speakers=[]; this.organizers=[]; this.guests=[];
     this.program={mainStage:[],networking:[]};
     this.trackColors={Keynote:'#1C2F63','Zdravice':'#5C6886','Networking':'#8CAA72','Přestávka':'#9AA4BD','Diskusní stoly':'#6E9152'};
     this.leaderColors={'LOM PRAHA':'#1C2F63','UAVA Aliance':'#6E9152','Connect Group':'#2B5CC4'};
@@ -394,7 +394,7 @@ class Component extends DCLogic {
     document.title='TECH4DEFENCE — organizátorský portál';
     try{
       const d=await import('./t4d-data.js');
-      this.companies=d.companies; this.groupsData=d.groups; this.obranne=d.obranneFirmy;
+      this.companies=d.companies; this.groupsData=d.groups; this.obranne=d.obranneFirmy; this.guests=d.guests||[];
       this.speakers=d.speakers; this.organizers=d.organizers; this.program=d.program; this.meta=d.meta;
       const base=0;
       const init={dataLoaded:true, checkedBase:base};
@@ -428,7 +428,9 @@ class Component extends DCLogic {
   doCheckin(codeArg){
     const raw=((codeArg!=null?String(codeArg):this.state.checkinCode)||'').trim().toUpperCase();
     if(!raw) return;
-    const c=this.companies.find(x=>this.code(x).toUpperCase()===raw);
+    let c=this.companies.find(x=>this.code(x).toUpperCase()===raw);
+    if(!c){ const g=(this.guests||[]).find(x=>(x.code||'').toUpperCase()===raw); if(g){ c={id:g.id,name:g.name,ini:((g.name.split(/\s+/).slice(0,2).map(function(w){return w[0];}).join(''))||'?').toUpperCase(),color:'#5C6886',person:g.role,grp:'Host'}; } }
+    if(!c){ const z=(this.obranne||[]).find(x=>(x.code||'').toUpperCase()===raw); if(z){ c={id:z.id,name:z.name,ini:z.ini,color:z.color,person:'Obranná firma',grp:'Zbroj.'}; } }
     if(!c){ this.setState({checkinMsg:'Neplatný kód: '+raw, checkinOk:false}); return; }
     if(this.state.checkins.find(x=>x.id===c.id)){ this.setState({checkinMsg:c.name+' už je odbaven/a', checkinOk:false, checkinCode:''}); return; }
     const now=new Date(); const time=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');

@@ -77,7 +77,7 @@
             <span style="width:8px;height:8px;border-radius:50%;background:var(--greenDeep);flex:none;animation:dhpulse 2.2s infinite"></span>
             <div style="flex:1;min-width:0">
               <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--greenDeep);margin-bottom:2px">Tvoje zařazení</div>
-              <div style="font-size:13px;font-weight:600;color:#2f4022;line-height:1.3">Jsi ve <span onClick="{{ goGroup }}" style="text-decoration:underline;cursor:pointer">{{ myGroupLabel }} — rozpis stolů →</span></div>
+              <div style="font-size:13px;font-weight:600;color:#2f4022;line-height:1.3"><span onClick="{{ goGroup }}" style="text-decoration:underline;cursor:pointer">{{ myAssign }}</span></div>
             </div>
             <div onClick="{{ dismissBanner }}" style="flex:none;width:22px;height:22px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--greenDeep);cursor:pointer;font-size:13px">✕</div>
           </div>
@@ -325,7 +325,7 @@
                     <div style="width:32px;height:32px;border-radius:50%;background:{{ m.color }};border:2px solid #13234E;margin-left:-9px;display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:11px">{{ m.ini }}</div>
                   </sc-for>
                 </div>
-                <span style="margin-left:10px;font-size:12px;color:#AEBBD8">{{ myMembersCount }} firem ve skupině</span>
+                <span style="margin-left:10px;font-size:12px;color:#AEBBD8">{{ myMembersLine }}</span>
               </div>
               <a href="{{ myGroupWa }}" target="_blank" rel="noopener" style="margin-top:17px;background:#25D366;border-radius:11px;padding:13px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;color:#0B1530;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px" style-hover="background:#1ebe5a">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="#0B1530"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.6-5.8c-.300-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.1-.6 0a6.7 6.7 0 0 1-2-1.2 7.5 7.5 0 0 1-1.4-1.7c-.1-.3 0-.4.1-.5l.4-.5.2-.3v-.4l-.8-2c-.2-.4-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 2.9 2.9 0 0 0-.9 2.2 5 5 0 0 0 1.1 2.6 11.4 11.4 0 0 0 4.4 3.9c2 .8 2.1.5 2.5.5a2.5 2.5 0 0 0 1.6-1.2 2 2 0 0 0 .2-1.2c-.1-.1-.3-.2-.5-.3z"/></svg>
@@ -820,6 +820,7 @@ class Component extends DCLogic {
       this.partners = d.partners || [];
       this.waAll = (d.meta && d.meta.waAll) || '';
       this.organizers = d.organizers || [];
+      this.guests = d.guests || [];
       this.program = d.program;
       this.demoUser = d.demoUser;
       this.myGroup = d.groups.find(g=>g.mine) || d.groups[0];
@@ -877,10 +878,19 @@ class Component extends DCLogic {
     const curEmpty = (s.peopleTab==='speakers'&&!speakers.length)||(s.peopleTab==='zbrojari'&&!zbrojari.length)||(s.peopleTab==='firmy'&&!firmy.length);
 
     // my group
-    const meCO = (s.me&&s.me.id) ? this.firmy.find(x=>x.id===s.me.id) : null;
-    const identified = !!(s.me && s.me.verified && meCO);
-    const mg = (meCO ? this.groupsData.find(g=>g.num===meCO.grp) : null) || this.groupsData[0] || {num:'',label:'Skupina',color:'#6E9152',soft:'#ECF1E5',range:'',members:[],rounds:[],wa:'#'};
-    const myCode = meCO ? this.participantCode(meCO) : '';
+    const isGuest = !!(s.me && s.me.type==='guest');
+    const isZbroj = !!(s.me && s.me.type==='zbrojar');
+    const meCO = (s.me&&s.me.id&&(!s.me.type||s.me.type==='firma')) ? this.firmy.find(x=>x.id===s.me.id) : null;
+    const meZ = isZbroj ? this.zbrojari.find(x=>x.id===s.me.id) : null;
+    const identified = !!(s.me && s.me.verified && (meCO||isGuest||meZ));
+    const mg = isGuest
+      ? {num:'H',label:'Host',color:'#5C6886',soft:'#EEF1F6',range:'Bez zařazení do skupiny — volný networking',members:[],rounds:[],wa:(this.waAll||'#')}
+      : (isZbroj && meZ)
+      ? {num:meZ.ini,label:meZ.name,color:meZ.color,soft:'#EEF1F6',range:'Vedete diskusní stoly — rozpis níže',members:[],rounds:((meZ.leaderRota)||[]).map(function(r){return {round:r.round,time:r.time,room:r.room,leader:'Vy vedete stůl',leaderColor:meZ.color};}),wa:(this.waAll||'#')}
+      : ((meCO ? this.groupsData.find(g=>g.num===meCO.grp) : null) || this.groupsData[0] || {num:'',label:'Skupina',color:'#6E9152',soft:'#ECF1E5',range:'',members:[],rounds:[],wa:'#'});
+    const myCode = (isGuest||isZbroj) ? (s.me.code||'') : (meCO ? this.participantCode(meCO) : '');
+    const myAssign = isGuest ? 'Jste přihlášen/a jako Host →' : isZbroj ? 'Vedete diskusní stoly →' : (mg.label+' — rozpis stolů →');
+    const myMembersLine = isGuest ? 'Volný networking u stolů' : isZbroj ? 'Vedete diskusní stoly' : ((mg.members||[]).length+' firem ve skupině');
     const checkinQrImg = myCode ? React.createElement('img',{src:'https://api.qrserver.com/v1/create-qr-code/?size=520x520&margin=0&data='+encodeURIComponent(myCode),alt:'Check-in QR',style:{width:'220px',height:'220px',display:'block'}}) : null;
     const myMembersTop=(mg.members||[]).slice(0,6);
 
@@ -947,7 +957,7 @@ class Component extends DCLogic {
 
     const next=this.program.mainStage[0]||{start:'10:00',title:'Zahajovací zdravice'};
     const meObj=s.me||{}; const meCompanyObj=this.firmy.find(x=>x.name===meObj.company);
-    const meGroupLabel=meCompanyObj?('Skupina '+meCompanyObj.grp):''; const meGroupColor=meCompanyObj?(groupColors[meCompanyObj.grp]||'#6E9152'):'#6E9152';
+    const meGroupLabel=mg.label; const meGroupColor=mg.color;
     const meContacts=(s.contacts||[]).map(c=>({...c, waUrl:this.waUrl(c.phone), hasPhone:!!c.phone, hasLinkedin:!!c.linkedin, hasEmail:!!c.email, mailto:'mailto:'+c.email, linkedinUrl:c.linkedin, vcardHref:'data:text/vcard;charset=utf-8,'+encodeURIComponent(this.vcard(c)), subline:(c.company||c.phone||c.email||''), remove:()=>this.removeContact(c.id)}));
     const meCompanyResults=(s.meCompanySearch||'').trim()? this.firmy.filter(c=>(c.name+' '+(c.person||'')).toLowerCase().includes(s.meCompanySearch.trim().toLowerCase())).slice(0,5).map(c=>({id:c.id,name:c.name,person:c.person,color:c.color,ini:c.ini,pick:()=>this.pickCompany(c)})) : [];
 
@@ -999,7 +1009,7 @@ class Component extends DCLogic {
       speakers, zbrojari, firmy, peopleEmpty:curEmpty, firmCount:this.firmy.length, firmShownCount:firmy.length,
       // groups
       myGroupNum:mg.num, myGroupLabel:mg.label, myGroupColor:mg.color, myGroupRange:mg.range, myGroupWa:(mg.wa||'#'),
-      needLogin:!identified, identified, myCode, checkinQrImg,
+      needLogin:!identified, identified, myCode, checkinQrImg, isGuest, myAssign, myMembersLine,
       openTicket:()=>this.setState({ticketOpen:true,notifOpen:false}), closeTicket:()=>this.setState({ticketOpen:false}), ticketOpen:s.ticketOpen,
       orgOpen:s.orgOpen, openOrg:()=>this.setState({orgOpen:true,notifOpen:false}), closeOrg:()=>this.setState({orgOpen:false}),
       orgTeam:(this.organizers||[]).map(o=>{ var ph=(o.phone||'').replace(/[^\d]/g,''); return { name:o.name, role:o.role, email:o.email, hasPhone:!!o.phone, waUrl:(ph?'https://wa.me/'+ph:''), telUrl:(o.phone?'tel:'+o.phone.replace(/\s/g,''):''), mailto:'mailto:'+o.email, avatarEl:(o.photo?React.createElement('img',{src:o.photo,alt:o.name,style:{width:'100%',height:'100%',objectFit:'cover'}}):React.createElement('div',{style:{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',background:o.color,color:'#fff',fontFamily:'Space Grotesk,sans-serif',fontWeight:700,fontSize:'18px'}},o.ini)) }; }),
@@ -1063,9 +1073,15 @@ class Component extends DCLogic {
   stopScan(){ if(this._scanner){ try{ this._scanner.stop().then(()=>{try{this._scanner.clear();}catch(e){}}).catch(()=>{}); }catch(e){} this._scanner=null; } this.setState({scanning:false}); }
   webFromEmail(email){ if(!email||!/@/.test(email)) return ''; const d=email.split('@')[1].toLowerCase().trim(); const free=['seznam.cz','gmail.com','email.cz','centrum.cz','post.cz','volny.cz','atlas.cz','outlook.com','hotmail.com','yahoo.com','icloud.com']; return free.indexOf(d)>=0?'':d; }
   participantCode(c){ return 'T4D-'+String(parseInt(String(c.id||'').replace(/\D/g,'')||'0')+1).padStart(3,'0'); }
-  setIdentified(c){ const prev=this.state.me||{}; const me={id:c.id,name:c.person,person:c.person,company:c.name,email:c.email,phone:prev.phone||'',linkedin:prev.linkedin||'',verified:true};
+  setIdentified(c){ const prev=this.state.me||{}; const me={id:c.id,type:'firma',name:c.person,person:c.person,company:c.name,email:c.email,phone:prev.phone||'',linkedin:prev.linkedin||'',verified:true};
     try{ localStorage.setItem('t4d_me_v1',JSON.stringify(me)); }catch(e){} this.setState({me, meForm:{...me}, identErr:false, identEmail:'', identSearch:''}); }
-  identifyByEmail(){ const e=(this.state.identEmail||'').trim().toLowerCase(); if(!e) return; const c=this.firmy.find(x=>(x.email||'').toLowerCase()===e); if(c){ this.setIdentified(c); } else { this.setState({identErr:true}); } }
+  setGuest(g){ const me={id:g.id,type:'guest',name:g.name,company:g.role,email:g.email,code:g.code,verified:true}; try{ localStorage.setItem('t4d_me_v1',JSON.stringify(me)); }catch(e){} this.setState({me, meForm:{...me}, identErr:false, identEmail:'', identSearch:''}); }
+  setZbrojar(o){ const me={id:o.id,type:'zbrojar',name:o.name,company:o.makes,email:o.loginEmail,code:o.code,verified:true}; try{ localStorage.setItem('t4d_me_v1',JSON.stringify(me)); }catch(e){} this.setState({me, meForm:{...me}, identErr:false, identEmail:'', identSearch:''}); }
+  identifyByEmail(){ const e=(this.state.identEmail||'').trim().toLowerCase(); if(!e) return;
+    let c=this.firmy.find(x=>(x.email||'').toLowerCase()===e); if(c){ this.setIdentified(c); return; }
+    let g=(this.guests||[]).find(x=>(x.email||'').toLowerCase()===e); if(g){ this.setGuest(g); return; }
+    let z=(this.zbrojari||[]).find(x=>(x.loginEmail||'').toLowerCase()===e); if(z){ this.setZbrojar(z); return; }
+    this.setState({identErr:true}); }
   logoutParticipant(){ try{ localStorage.removeItem('t4d_me_v1'); }catch(e){} this.setState({me:null, badgeOpen:false, identEmail:'', identErr:false, identSearch:''}); }
   demoLogin(){ const c=this.firmy.find(x=>/Fly4Future/i.test(x.name))||this.firmy[0]; if(c) this.setIdentified(c); }
 }
