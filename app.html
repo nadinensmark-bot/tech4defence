@@ -607,7 +607,7 @@
 
             <!-- VIZITKA -->
             <sc-if value="{{ tabVizitka }}" hint-placeholder-val="{{ true }}">
-              <sc-if value="{{ meReady }}" hint-placeholder-val="{{ true }}">
+              <sc-if value="{{ meReady }}" hint-placeholder-val="{{ false }}">
                 <div style="border-radius:20px;overflow:hidden;background:radial-gradient(120% 130% at 85% 5%,#1B2D5E 0%,#0E1B3C 55%,#0B1530 100%);color:#fff;padding:22px;position:relative">
                   <div style="position:absolute;right:-14px;top:-14px;width:70px;height:70px;opacity:.5"><div style="position:absolute;inset:0;clip-path:polygon(50% 0,100% 25%,50% 50%,0 25%);background:#2B5CC4"></div><div style="position:absolute;inset:0;clip-path:polygon(0 25%,50% 50%,50% 100%,0 75%);background:#1C2F63"></div><div style="position:absolute;inset:0;clip-path:polygon(100% 25%,50% 50%,50% 100%,100% 75%);background:#8CAA72"></div></div>
                   <div style="position:relative;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:#7FA6F0;font-weight:600">{{ eventName }} · vizitka</div>
@@ -615,6 +615,7 @@
                     <div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:21px;line-height:1.1">{{ meName }}</div>
                     <div style="font-size:12.5px;color:#9DABCB;margin-top:3px">{{ meCompany }}</div>
                     <span style="display:inline-block;margin-top:9px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#0B1530;background:{{ meGroupColor }};padding:4px 10px;border-radius:20px;font-weight:600">{{ meGroupLabel }}</span>
+                    <div style="margin-top:12px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9DABCB">Kód pro check‑in: <span style="color:#fff;font-weight:600;letter-spacing:.06em">{{ myCode }}</span></div>
                   </div>
                   <div style="background:#fff;border-radius:16px;padding:14px;margin-top:18px;display:flex;flex-direction:column;align-items:center;gap:8px">
                     <img src="{{ meQr }}" alt="QR vizitka" style="width:180px;height:180px;display:block">
@@ -627,6 +628,7 @@
                   <a href="{{ meMailto }}" style="flex:1;background:var(--mist);color:var(--navy);border-radius:11px;padding:12px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13px;text-decoration:none">E‑mail</a>
                 </div>
                 <div onClick="{{ startEdit }}" style="margin-top:9px;border:1px solid var(--line);color:var(--navy);border-radius:11px;padding:12px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13.5px;cursor:pointer" style-hover="border-color:#cdd6e6">Upravit vizitku</div>
+                <div onClick="{{ logoutParticipant }}" style="margin-top:9px;text-align:center;font-size:12px;color:var(--muted);cursor:pointer">Nejsem to já — odhlásit</div>
               </sc-if>
 
               <sc-if value="{{ meEditing }}" hint-placeholder-val="{{ false }}">
@@ -694,6 +696,33 @@
       </div>
       </sc-if>
 
+      <!-- ============ PARTICIPANT LOGIN ============ -->
+      <sc-if value="{{ needLogin }}" hint-placeholder-val="{{ false }}">
+      <div class="dhscroll" style="position:absolute;inset:0;z-index:90;background:radial-gradient(130% 120% at 80% 0%,#1B2D5E 0%,#0E1B3C 48%,#0B1530 100%);color:#fff;display:flex;flex-direction:column;padding:30px 24px 26px;overflow-y:auto">
+        <div style="display:flex;align-items:center;gap:11px;flex:none">
+          <div style="width:30px;height:30px;position:relative"><div style="position:absolute;inset:0;clip-path:polygon(50% 0,100% 25%,50% 50%,0 25%);background:#2B5CC4"></div><div style="position:absolute;inset:0;clip-path:polygon(0 25%,50% 50%,50% 100%,0 75%);background:#1C2F63"></div><div style="position:absolute;inset:0;clip-path:polygon(100% 25%,50% 50%,50% 100%,100% 75%);background:#8CAA72"></div></div>
+          <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;letter-spacing:-.01em">TECH4DEFENCE</span>
+        </div>
+        <div style="margin-top:auto;padding-top:28px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#7FA6F0;font-weight:600">Vstup pro účastníky</div>
+          <h2 style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:25px;line-height:1.1;margin:12px 0 0;letter-spacing:-.01em">Přihlaste se e‑mailem</h2>
+          <p style="font-size:13.5px;line-height:1.55;color:#AEBBD8;margin:10px 0 18px">Zadejte e‑mail, se kterým jste se registrovali — načte se vaše skupina, rozpis stolů a kód pro check‑in.</p>
+          <input value="{{ identEmail }}" onInput="{{ onIdentEmail }}" onKeyDown="{{ onIdentKey }}" placeholder="jmeno@firma.cz" style="width:100%;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);border-radius:11px;padding:13px 14px;font-size:14.5px;color:#fff;font-family:'IBM Plex Sans',sans-serif">
+          <sc-if value="{{ identErr }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:#FCA5A5;margin-top:8px;line-height:1.4">E‑mail jsme nenašli. Zkuste jiný, nebo se najděte podle firmy níže.</div></sc-if>
+          <div onClick="{{ doIdentify }}" style="margin-top:14px;background:#2B5CC4;color:#fff;border-radius:11px;padding:14px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;cursor:pointer" style-hover="background:#3E72E0">Vstoupit →</div>
+          <div style="display:flex;align-items:center;gap:10px;margin:20px 0 12px"><span style="flex:1;height:1px;background:rgba(255,255,255,.14)"></span><span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#5E6E92">nebo najděte svou firmu</span><span style="flex:1;height:1px;background:rgba(255,255,255,.14)"></span></div>
+          <input value="{{ identSearch }}" onInput="{{ onIdentSearch }}" placeholder="Hledat firmu…" style="width:100%;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);border-radius:11px;padding:12px 14px;font-size:13.5px;color:#fff;font-family:'IBM Plex Sans',sans-serif">
+          <sc-for list="{{ identResults }}" as="r" hint-placeholder-count="0">
+            <div onClick="{{ r.pick }}" style="display:flex;align-items:center;gap:11px;margin-top:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:11px;padding:10px 12px;cursor:pointer" style-hover="background:rgba(255,255,255,.12)">
+              <div style="flex:none;width:32px;height:32px;border-radius:8px;background:{{ r.color }};display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:11px">{{ r.ini }}</div>
+              <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</div><div style="font-size:11px;color:#9DABCB">{{ r.person }}</div></div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="flex:none;margin-top:26px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;color:#5E6E92">ORGANIZUJE CZECHINVEST · 23. 6. 2026</div>
+      </div>
+      </sc-if>
+
     </div>
   </div>
 </div>
@@ -707,6 +736,7 @@ class Component extends DCLogic {
       loaded:false, tab:'home', peopleTab:'speakers', mapTab:'areal', progTab:'main',
       fav:{}, pplSearch:'', detail:null, notifOpen:false, chatOpen:false, badgeOpen:false, banner:true,
       badgeTab:'vizitka', me:null, meEdit:false, meForm:{name:'',company:'',email:'',phone:'',linkedin:''}, meCompanySearch:'', contacts:[], scanMsg:'', scanning:false, manualInput:'',
+      identEmail:'', identErr:false, identSearch:'',
       chat:[], chatInput:'', unread:2
     };
     this.trackColors = {Keynote:'#1C2F63','Zdravice':'#5C6886','Networking':'#8CAA72','Přestávka':'#9AA4BD','Diskusní stoly':'#6E9152'};
@@ -740,8 +770,7 @@ class Component extends DCLogic {
       let me=null, contacts=[];
       try{ me=JSON.parse(localStorage.getItem('t4d_me_v1')||'null'); }catch(e){}
       try{ contacts=JSON.parse(localStorage.getItem('t4d_contacts_v1')||'[]'); }catch(e){}
-      if(!me){ const du=d.demoUser; me={name:du.name,company:du.company,email:du.email,phone:'',linkedin:''}; }
-      this.setState({loaded:true, chat:seed, me, contacts, meForm:{...me}});
+      this.setState({loaded:true, chat:seed, me, contacts, meForm:{...(me||{name:'',company:'',email:'',phone:'',linkedin:''})}});
     }catch(e){ console.error('t4d-data load failed', e); this.setState({loaded:true}); }
   }
   go(tab){ return ()=>this.setState({tab, detail:null, notifOpen:false, chatOpen:false, badgeOpen:false}); }
@@ -784,7 +813,10 @@ class Component extends DCLogic {
     const curEmpty = (s.peopleTab==='speakers'&&!speakers.length)||(s.peopleTab==='zbrojari'&&!zbrojari.length)||(s.peopleTab==='firmy'&&!firmy.length);
 
     // my group
-    const mg=this.myGroup;
+    const meCO = (s.me&&s.me.id) ? this.firmy.find(x=>x.id===s.me.id) : null;
+    const identified = !!(s.me && s.me.verified && meCO);
+    const mg = (meCO ? this.groupsData.find(g=>g.num===meCO.grp) : null) || this.groupsData[0] || {num:'',label:'Skupina',color:'#6E9152',soft:'#ECF1E5',range:'',members:[],rounds:[],wa:'#'};
+    const myCode = meCO ? this.participantCode(meCO) : '';
     const myMembersTop=(mg.members||[]).slice(0,6);
 
     // detail
@@ -907,6 +939,11 @@ class Component extends DCLogic {
       speakers, zbrojari, firmy, peopleEmpty:curEmpty, firmCount:this.firmy.length, firmShownCount:firmy.length,
       // groups
       myGroupNum:mg.num, myGroupLabel:mg.label, myGroupColor:mg.color, myGroupRange:mg.range, myGroupWa:(mg.wa||'#'),
+      needLogin:!identified, identified, myCode,
+      identEmail:s.identEmail, onIdentEmail:(e)=>this.setState({identEmail:e.target.value,identErr:false}), doIdentify:()=>this.identifyByEmail(), onIdentKey:(e)=>{ if(e.key==='Enter') this.identifyByEmail(); }, identErr:s.identErr,
+      identSearch:s.identSearch, onIdentSearch:(e)=>this.setState({identSearch:e.target.value}),
+      identResults:((s.identSearch||'').trim()? this.firmy.filter(c=>(c.name+' '+(c.person||'')+' '+(c.email||'')).toLowerCase().includes(s.identSearch.trim().toLowerCase())).slice(0,6).map(c=>({id:c.id,name:c.name,person:c.person,ini:c.ini,color:c.color,pick:()=>this.setIdentified(c)})):[]),
+      logoutParticipant:()=>this.logoutParticipant(),
       myMembersTop, myMembersCount:(mg.members||[]).length, myRounds:mg.rounds||[],
       allGroups:this.groupsData,
       openChat:()=>this.setState({chatOpen:true,unread:0}), unread:s.unread>0, unreadCount:s.unread,
@@ -961,6 +998,11 @@ class Component extends DCLogic {
     }catch(e){ this.setState({scanMsg:'Kameru se nepodařilo spustit — zadej odkaz ručně níže.'}); } }
   stopScan(){ if(this._scanner){ try{ this._scanner.stop().then(()=>{try{this._scanner.clear();}catch(e){}}).catch(()=>{}); }catch(e){} this._scanner=null; } this.setState({scanning:false}); }
   webFromEmail(email){ if(!email||!/@/.test(email)) return ''; const d=email.split('@')[1].toLowerCase().trim(); const free=['seznam.cz','gmail.com','email.cz','centrum.cz','post.cz','volny.cz','atlas.cz','outlook.com','hotmail.com','yahoo.com','icloud.com']; return free.indexOf(d)>=0?'':d; }
+  participantCode(c){ return 'T4D-'+String(parseInt(String(c.id||'').replace(/\D/g,'')||'0')+1).padStart(3,'0'); }
+  setIdentified(c){ const prev=this.state.me||{}; const me={id:c.id,name:c.person,person:c.person,company:c.name,email:c.email,phone:prev.phone||'',linkedin:prev.linkedin||'',verified:true};
+    try{ localStorage.setItem('t4d_me_v1',JSON.stringify(me)); }catch(e){} this.setState({me, meForm:{...me}, identErr:false, identEmail:'', identSearch:''}); }
+  identifyByEmail(){ const e=(this.state.identEmail||'').trim().toLowerCase(); if(!e) return; const c=this.firmy.find(x=>(x.email||'').toLowerCase()===e); if(c){ this.setIdentified(c); } else { this.setState({identErr:true}); } }
+  logoutParticipant(){ try{ localStorage.removeItem('t4d_me_v1'); }catch(e){} this.setState({me:null, badgeOpen:false, identEmail:'', identErr:false, identSearch:''}); }
 }
 </script>
 </body>
