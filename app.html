@@ -156,12 +156,13 @@
             <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:11px"><span style="width:16px;height:1px;background:var(--green)"></span>Organizační info</div>
             <div style="background:#fff;border:1px solid var(--line);border-radius:15px;overflow:hidden">
               <sc-for list="{{ orgInfo }}" as="o" hint-placeholder-count="4">
-                <div style="display:flex;align-items:center;gap:13px;padding:13px 15px;border-bottom:1px solid var(--mist)">
+                <div onClick="{{ o.action }}" style="display:flex;align-items:center;gap:13px;padding:13px 15px;border-bottom:1px solid var(--mist)">
                   <div style="flex:none;width:34px;height:34px;border-radius:9px;background:var(--mist);display:flex;align-items:center;justify-content:center;color:{{ o.color }};font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600">{{ o.icon }}</div>
                   <div style="flex:1;min-width:0">
                     <div style="font-size:13.5px;font-weight:600;color:var(--navy)">{{ o.label }}</div>
                     <div style="font-size:12px;color:var(--muted);margin-top:1px">{{ o.value }}</div>
                   </div>
+                  <sc-if value="{{ o.action }}" hint-placeholder-val="{{ false }}"><span style="flex:none;color:#c2cad8;font-size:18px">›</span></sc-if>
                 </div>
               </sc-for>
             </div>
@@ -418,16 +419,17 @@
             </div>
           </div>
           <sc-for list="{{ parking }}" as="lot" hint-placeholder-count="3">
-            <div style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 15px;margin-top:10px">
+            <a href="{{ lot.mapUrl }}" target="_blank" rel="noopener" style="display:block;text-decoration:none;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 15px;margin-top:10px" style-hover="border-color:#cdd6e6">
               <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
                 <div style="flex:1;min-width:0"><div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14.5px;color:var(--navy)">{{ lot.name }}</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.4">{{ lot.note }}</div></div>
                 <span style="flex:none;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#fff;background:{{ lot.color }};padding:4px 8px;border-radius:8px;white-space:nowrap">{{ lot.walk }}</span>
               </div>
-            </div>
+              <div style="margin-top:10px;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--blue)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 21s7-5.5 7-11a7 7 0 0 0-14 0c0 5.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Navigovat ↗</div>
+            </a>
           </sc-for>
           <div style="background:var(--mist);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:10px">
             <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px">MHD — nejblíž</div>
-            <div style="font-size:12.5px;color:var(--navy);line-height:1.5">Metro <strong>B Náměstí Republiky</strong> (4 min) · <strong>A Staroměstská</strong> (7 min) · tram Náměstí Republiky.</div>
+            <div style="font-size:12.5px;color:var(--navy);line-height:1.7">Metro <a href="https://www.google.com/maps/search/?api=1&query=Metro%20N%C3%A1m%C4%9Bst%C3%AD%20Republiky%2C%20Praha" target="_blank" rel="noopener" style="color:var(--blue);font-weight:600;text-decoration:none">B Náměstí Republiky</a> (4 min) · <a href="https://www.google.com/maps/search/?api=1&query=Metro%20Starom%C4%9Bstsk%C3%A1%2C%20Praha" target="_blank" rel="noopener" style="color:var(--blue);font-weight:600;text-decoration:none">A Staroměstská</a> (7 min) · tram Náměstí Republiky.</div>
           </div>
           </sc-if>
         </div>
@@ -515,6 +517,9 @@
             </div>
             </sc-if>
 
+            <sc-if value="{{ dp.hasWebLink }}" hint-placeholder-val="{{ false }}">
+              <a href="{{ dp.webUrl }}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:13px;text-decoration:none;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13.5px;color:var(--navy)" style-hover="border-color:#cdd6e6"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18"/></svg>{{ dp.web }} ↗</a>
+            </sc-if>
             <sc-if value="{{ dp.hasSession }}" hint-placeholder-val="{{ false }}">
             <div style="margin-top:18px;border:1px solid var(--line);border-left:3px solid {{ dp.color }};border-radius:12px;padding:13px 14px">
               <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px">Vystoupení</div>
@@ -728,6 +733,31 @@
       </div>
       </sc-if>
 
+      <!-- ============ ORGANIZÁTOŘI ============ -->
+      <sc-if value="{{ orgOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeOrg }}" style="position:absolute;inset:0;z-index:87;background:rgba(8,15,34,.55);backdrop-filter:blur(3px);display:flex;flex-direction:column;justify-content:flex-end">
+        <div onClick="{{ stop }}" style="width:100%;max-height:92%;background:#fff;border-radius:24px 24px 0 0;display:flex;flex-direction:column">
+          <div style="flex:none;padding:11px 0 0;display:flex;justify-content:center"><div style="width:38px;height:4px;border-radius:20px;background:#d7dce6"></div></div>
+          <div class="dhscroll" style="flex:1;min-height:0;overflow-y:auto;padding:14px 18px 22px">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:14px"><span style="width:16px;height:1px;background:var(--green)"></span>Organizační tým · CzechInvest</div>
+            <sc-for list="{{ orgTeam }}" as="o" hint-placeholder-count="4">
+              <div style="background:#fff;border:1px solid var(--line);border-radius:15px;padding:15px;margin-bottom:11px">
+                <div style="display:flex;align-items:center;gap:13px">
+                  <div style="flex:none;width:54px;height:54px;border-radius:50%;overflow:hidden;background:var(--mist)">{{ o.avatarEl }}</div>
+                  <div style="flex:1;min-width:0"><div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15.5px;color:var(--navy);line-height:1.2">{{ o.name }}</div><div style="font-size:12.5px;color:var(--muted);margin-top:2px">{{ o.role }}</div></div>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:13px">
+                  <sc-if value="{{ o.hasPhone }}" hint-placeholder-val="{{ true }}"><a href="{{ o.waUrl }}" target="_blank" rel="noopener" style="flex:1;background:#25D366;color:#0B1530;border-radius:10px;padding:11px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:12.5px;text-decoration:none">WhatsApp</a></sc-if>
+                  <sc-if value="{{ o.hasPhone }}" hint-placeholder-val="{{ true }}"><a href="{{ o.telUrl }}" style="flex:1;background:var(--blueSoft);color:var(--blue);border-radius:10px;padding:11px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:12.5px;text-decoration:none">Zavolat</a></sc-if>
+                  <a href="{{ o.mailto }}" style="flex:1;background:var(--mist);color:var(--navy);border-radius:10px;padding:11px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:12.5px;text-decoration:none">E‑mail</a>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
       <!-- ============ PARTICIPANT LOGIN ============ -->
       <sc-if value="{{ needLogin }}" hint-placeholder-val="{{ false }}">
       <div class="dhscroll" style="position:absolute;inset:0;z-index:90;background:radial-gradient(130% 120% at 80% 0%,#1B2D5E 0%,#0E1B3C 48%,#0B1530 100%);color:#fff;display:flex;flex-direction:column;padding:30px 24px 26px;overflow-y:auto">
@@ -769,7 +799,7 @@ class Component extends DCLogic {
       loaded:false, tab:'home', peopleTab:'speakers', mapTab:'areal', progTab:'main',
       fav:{}, pplSearch:'', detail:null, notifOpen:false, chatOpen:false, badgeOpen:false, banner:true,
       badgeTab:'vizitka', me:null, meEdit:false, meForm:{name:'',company:'',email:'',phone:'',linkedin:''}, meCompanySearch:'', contacts:[], scanMsg:'', scanning:false, manualInput:'',
-      identEmail:'', identErr:false, identSearch:'', ticketOpen:false,
+      identEmail:'', identErr:false, identSearch:'', ticketOpen:false, orgOpen:false,
       chat:[], chatInput:'', unread:2
     };
     this.trackColors = {Keynote:'#1C2F63','Zdravice':'#5C6886','Networking':'#8CAA72','Přestávka':'#9AA4BD','Diskusní stoly':'#6E9152'};
@@ -789,6 +819,7 @@ class Component extends DCLogic {
       this.groupsData = d.groups;
       this.partners = d.partners || [];
       this.waAll = (d.meta && d.meta.waAll) || '';
+      this.organizers = d.organizers || [];
       this.program = d.program;
       this.demoUser = d.demoUser;
       this.myGroup = d.groups.find(g=>g.mine) || d.groups[0];
@@ -868,7 +899,7 @@ class Component extends DCLogic {
         } else if(t==='zbrojar'){ const p=this.zbrojari.find(x=>x.id===s.detail.id)||{};
           dp={ ini:p.ini, color:p.color, name:p.name, sub:p.makes, kindLabel:'Obranná firma', avatarRadius:'13px',
             chips:[{k:'Země',v:p.country},{k:'Role',v:'Leader stolů'}], bodyLabel:'Profil', body:p.desc,
-            hasLooking:true, looking:p.looking, hasSession:false, hasContact:false, msgLabel:'Zavřít',
+            hasLooking:true, looking:p.looking, hasSession:false, hasContact:false, hasWebLink:!!p.web, webUrl:(p.web?(/^https?:/.test(p.web)?p.web:'https://'+p.web):''), web:(p.web||'').replace(/^https?:\/\//,''), msgLabel:'Zavřít',
             message:()=>this.setState({detail:null}), connect:()=>this.setState({detail:null}) };
         } else { const p=this.firmy.find(x=>x.id===s.detail.id)||{}; const dom=this.webFromEmail(p.email);
           dp={ ini:p.ini, color:p.color, name:p.name, sub:p.cat, kindLabel:'Účastník · firma', avatarRadius:'13px',
@@ -912,12 +943,7 @@ class Component extends DCLogic {
     });
 
     // notifications
-    const notifications=[
-      {id:'n1',color:'#6E9152',title:'Jsi v '+mg.label,text:'Rozpis: 3 kola diskusních stolů přes zasedačky '+(mg.rounds||[]).map(r=>r.room).join(', ')+'.',time:'před 5 min', action:()=>this.setState({notifOpen:false,tab:'groups'})},
-      {id:'n2',color:'#2B5CC4',title:'Program začíná v 10:00',text:'Zahajovací zdravice — Hlavní stage.',time:'09:45', action:()=>this.setState({notifOpen:false,tab:'program',progTab:'main'})},
-      {id:'n3',color:'#25D366',title:'WhatsApp skupina je aktivní',text:'Skupinový chat běží na WhatsAppu — otevři v záložce Skupiny.',time:'09:30', action:()=>this.setState({notifOpen:false,tab:'groups'})},
-      {id:'n4',color:'#C2410C',title:'1. kolo diskusních stolů',text:'Začíná 10:20. Najdi svou zasedačku v záložce Skupiny.',time:'10:10', action:()=>this.setState({notifOpen:false,tab:'groups'})}
-    ];
+    const notifications=[];
 
     const next=this.program.mainStage[0]||{start:'10:00',title:'Zahajovací zdravice'};
     const meObj=s.me||{}; const meCompanyObj=this.firmy.find(x=>x.name===meObj.company);
@@ -932,7 +958,7 @@ class Component extends DCLogic {
       cHome:this.nav(s.tab==='home'), cProgram:this.nav(s.tab==='program'), cPeople:this.nav(s.tab==='people'), cGroups:this.nav(s.tab==='groups'), cMap:this.nav(s.tab==='map'),
       goHome:this.go('home'), goProgram:this.go('program'), goPeople:this.go('people'), goGroup:this.go('groups'), goMap:this.go('map'),
       goMapParking:()=>this.setState({tab:'map',mapTab:'parking',detail:null,notifOpen:false,badgeOpen:false}),
-      toggleNotif:()=>this.setState(st=>({notifOpen:!st.notifOpen,badgeOpen:false})), notifOpen:s.notifOpen, hasNotif:true, notifications, bellStroke: dark?'#fff':'#13234E',
+      toggleNotif:()=>this.setState(st=>({notifOpen:!st.notifOpen,badgeOpen:false})), notifOpen:s.notifOpen, hasNotif:notifications.length>0, noNotif:notifications.length===0, notifications, bellStroke: dark?'#fff':'#13234E',
       stop:(e)=>e.stopPropagation(),
       showBanner:s.banner && (this.props.showMissionBanner!==false), dismissBanner:()=>this.setState({banner:false}),
       // networking hub
@@ -958,7 +984,7 @@ class Component extends DCLogic {
         {icon:'i',color:'#2B5CC4',label:'Registrace',value:'Vstup Celetná 19 · od 9:30'},
         {icon:'w',color:'#6E9152',label:'Wi-Fi',value:'PII-Guest · heslo: tech4defence'},
         {icon:'c',color:'#3E7CA8',label:'Občerstvení',value:'Přestávka 11:40 · networking oběd 12:40'},
-        {icon:'?',color:'#46618F',label:'Kontakt na organizátory',value:'Tým CzechInvest · helpdesk u registrace'}
+        {icon:'?',color:'#46618F',label:'Organizátoři akce',value:'WhatsApp · telefon · e‑mail',action:()=>this.setState({orgOpen:true})}
       ],
       partners:this.partners, waAll:this.waAll, hasWaAll:!!this.waAll,
       // program
@@ -975,6 +1001,8 @@ class Component extends DCLogic {
       myGroupNum:mg.num, myGroupLabel:mg.label, myGroupColor:mg.color, myGroupRange:mg.range, myGroupWa:(mg.wa||'#'),
       needLogin:!identified, identified, myCode, checkinQrImg,
       openTicket:()=>this.setState({ticketOpen:true,notifOpen:false}), closeTicket:()=>this.setState({ticketOpen:false}), ticketOpen:s.ticketOpen,
+      orgOpen:s.orgOpen, openOrg:()=>this.setState({orgOpen:true,notifOpen:false}), closeOrg:()=>this.setState({orgOpen:false}),
+      orgTeam:(this.organizers||[]).map(o=>{ var ph=(o.phone||'').replace(/[^\d]/g,''); return { name:o.name, role:o.role, email:o.email, hasPhone:!!o.phone, waUrl:(ph?'https://wa.me/'+ph:''), telUrl:(o.phone?'tel:'+o.phone.replace(/\s/g,''):''), mailto:'mailto:'+o.email, avatarEl:(o.photo?React.createElement('img',{src:o.photo,alt:o.name,style:{width:'100%',height:'100%',objectFit:'cover'}}):React.createElement('div',{style:{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',background:o.color,color:'#fff',fontFamily:'Space Grotesk,sans-serif',fontWeight:700,fontSize:'18px'}},o.ini)) }; }),
       identEmail:s.identEmail, onIdentEmail:(e)=>this.setState({identEmail:e.target.value,identErr:false}), doIdentify:()=>this.identifyByEmail(), onIdentKey:(e)=>{ if(e.key==='Enter') this.identifyByEmail(); }, identErr:s.identErr,
       identSearch:s.identSearch, onIdentSearch:(e)=>this.setState({identSearch:e.target.value}),
       identResults:((s.identSearch||'').trim()? this.firmy.filter(c=>(c.name+' '+(c.person||'')+' '+(c.email||'')).toLowerCase().includes(s.identSearch.trim().toLowerCase())).slice(0,6).map(c=>({id:c.id,name:c.name,person:c.person,ini:c.ini,color:c.color,pick:()=>this.setIdentified(c)})):[]),
@@ -988,9 +1016,9 @@ class Component extends DCLogic {
       tabAreal:s.mapTab==='areal', tabPark:s.mapTab==='parking', rooms,
       mapsUrl:'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent('Pražský inovační institut, Celetná 19, 110 00 Praha 1'),
       parking:[
-        {name:'Parkoviště Náměstí Republiky',note:'Podzemní garáž OD Kotva / Palladium',color:'#6E9152',walk:'5 min'},
-        {name:'Parking Rudolfinum',note:'Nám. Jana Palacha — u Vltavy',color:'#3E7CA8',walk:'9 min'},
-        {name:'Garáže Slovanský dům',note:'Na Příkopě 22',color:'#46618F',walk:'7 min'}
+        {name:'Parkoviště Náměstí Republiky',note:'Podzemní garáž OD Kotva / Palladium',color:'#6E9152',walk:'5 min',mapUrl:'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent('Parkování Palladium Náměstí Republiky, Praha')},
+        {name:'Parking Rudolfinum',note:'Nám. Jana Palacha — u Vltavy',color:'#3E7CA8',walk:'9 min',mapUrl:'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent('Parking Rudolfinum, Praha')},
+        {name:'Garáže Slovanský dům',note:'Na Příkopě 22',color:'#46618F',walk:'7 min',mapUrl:'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent('Garáže Slovanský dům, Na Příkopě 22, Praha')}
       ],
       // detail
       hasDetail, detailIsPerson, detailIsSession, dp, ds, closeDetail:()=>this.setState({detail:null}),
