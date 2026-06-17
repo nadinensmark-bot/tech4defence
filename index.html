@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TECH4DEFENCE — Praha 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{min-height:100vh;font-family:'IBM Plex Sans',sans-serif;-webkit-font-smoothing:antialiased;color:#fff;
+    background:radial-gradient(130% 120% at 80% 0%,#1B2D5E 0%,#0E1B3C 48%,#0B1530 100%);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px}
+  ::selection{background:#2B5CC4;color:#fff}
+  @keyframes pulse{0%,100%{opacity:.45}50%{opacity:1}}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+  .diamond{position:relative}
+  .diamond>div{position:absolute;inset:0}
+  .wrap{width:100%;max-width:880px}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:38px}
+  @media(max-width:680px){.cards{grid-template-columns:1fr}}
+  .card{display:block;text-decoration:none;color:inherit;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);
+    border-radius:18px;padding:26px;transition:transform .18s,border-color .18s,background .18s}
+  .card:hover{transform:translateY(-5px);border-color:#2B5CC4;background:rgba(43,92,196,.1)}
+  .badge{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;
+    padding:5px 10px;border-radius:20px;display:inline-block}
+  .cta{margin-top:20px;display:inline-flex;align-items:center;gap:8px;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+
+    <div style="display:flex;align-items:center;gap:13px">
+      <div class="diamond" style="width:38px;height:38px;animation:float 7s ease-in-out infinite">
+        <div style="clip-path:polygon(50% 0,100% 25%,50% 50%,0 25%);background:#2B5CC4"></div>
+        <div style="clip-path:polygon(0 25%,50% 50%,50% 100%,0 75%);background:#1C2F63"></div>
+        <div style="clip-path:polygon(100% 25%,50% 50%,50% 100%,100% 75%);background:#8CAA72"></div>
+      </div>
+      <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:19px;letter-spacing:-.01em">TECH4DEFENCE</span>
+    </div>
+
+    <div style="margin-top:44px">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#7FA6F0;font-weight:600;display:flex;align-items:center;gap:11px">
+        <span style="width:24px;height:1px;background:#7FA6F0;display:inline-block"></span>Networking výrobních firem s obranným průmyslem
+      </div>
+      <h1 style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:clamp(36px,6vw,58px);line-height:1.02;letter-spacing:-.025em;margin:18px 0 0;max-width:16ch">Vstupní brána do akce</h1>
+      <div style="display:flex;flex-wrap:wrap;gap:9px;margin-top:22px">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);padding:7px 12px;border-radius:9px;color:#D6DEF0">úterý 23. 6. 2026 · 10–14 h</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);padding:7px 12px;border-radius:9px;color:#D6DEF0">Pražský inovační institut · Celetná 19</span>
+      </div>
+    </div>
+
+    <div class="cards">
+      <a class="card" href="app.html" style="border-top:3px solid #2B5CC4">
+        <span class="badge" style="background:rgba(43,92,196,.18);color:#9FC0FF">Pro účastníky</span>
+        <h2 style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:22px;margin:16px 0 8px">Aplikace pro účastníky</h2>
+        <p style="font-size:14px;line-height:1.6;color:#AEBBD8;margin:0">Program, firmy a obranné firmy, tvoje skupina a rozpis diskusních stolů, mapa, QR vstupenka, chat a notifikace.</p>
+        <span class="cta" style="color:#8FB6FF">Otevřít aplikaci
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
+
+      <a class="card" href="admin.html" style="border-top:3px solid #8CAA72">
+        <span class="badge" style="background:rgba(140,170,114,.2);color:#B7D49A">Pro organizátory</span>
+        <h2 style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:22px;margin:16px 0 8px">Organizátorský portál</h2>
+        <p style="font-size:14px;line-height:1.6;color:#AEBBD8;margin:0">Přihlášení, přehled akce, správa programu a firem, rozřazení do skupin, rotace stolů, notifikace a check‑in přes QR.</p>
+        <span class="cta" style="color:#A9C98C">Přihlásit se
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
+    </div>
+
+    <div style="margin-top:40px;display:flex;align-items:center;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;color:#5E6E92">
+      <span style="width:7px;height:7px;border-radius:50%;background:#8CAA72;display:inline-block;animation:pulse 2.4s infinite"></span>
+      ORGANIZUJE CZECHINVEST · HOSTITEL PRAŽSKÝ INOVAČNÍ INSTITUT
+    </div>
+
+  </div>
+</body>
+</html>
