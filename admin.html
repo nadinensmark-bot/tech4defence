@@ -374,12 +374,12 @@ class Component extends DCLogic {
     this.companies=[]; this.groupsData=[]; this.obranne=[]; this.speakers=[]; this.organizers=[]; this.guests=[];
     this.program={mainStage:[],networking:[]};
     this.trackColors={Keynote:'#1C2F63','Zdravice':'#5C6886','Networking':'#8CAA72','Přestávka':'#9AA4BD','Diskusní stoly':'#6E9152'};
-    this.leaderColors={'LOM PRAHA':'#1C2F63','UAVA Aliance':'#6E9152','Connect Group':'#2B5CC4'};
+    this.leaderColors={'LOM PRAHA':'#1C2F63','UAVA Aliance':'#6E9152','VTÚ s.p.':'#2B5CC4'};
     // rotation matrix from xlsx (room -> 3 rounds: [leader, [groups]])
     this.rota=[
-      {room:1, cells:[['LOM PRAHA',[1,2]],['UAVA Aliance',[2,5]],['Connect Group',[4,2]]]},
-      {room:2, cells:[['UAVA Aliance',[3,4]],['Connect Group',[3,1]],['LOM PRAHA',[3,5]]]},
-      {room:3, cells:[['Connect Group',[5,6]],['LOM PRAHA',[4,6]],['UAVA Aliance',[1,6]]]}
+      {room:1, cells:[['LOM PRAHA',[1,2]],['UAVA Aliance',[2,5]],['VTÚ s.p.',[4,2]]]},
+      {room:2, cells:[['UAVA Aliance',[3,4]],['VTÚ s.p.',[3,1]],['LOM PRAHA',[3,5]]]},
+      {room:3, cells:[['VTÚ s.p.',[5,6]],['LOM PRAHA',[4,6]],['UAVA Aliance',[1,6]]]}
     ];
     this.navDefs=[
       {key:'prehled',label:'Přehled',icon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>'},
@@ -457,7 +457,13 @@ class Component extends DCLogic {
     const aud=audMap[this.state.notifAudience]||'Všichni';
     const meta=aud+' · teď · '+(this.state.org?this.state.org.name.split(' ')[0]+' '+this.state.org.name.split(' ')[1][0]+'.':'org');
     const full=t+(this.state.notifBody?'\n\n'+this.state.notifBody:'');
-    this.setState(st=>({ sentNotifs:[{id:Date.now(),color:'#25D366',title:t,text:st.notifBody||'(bez textu)',meta},...st.sentNotifs], notifTitle:'', notifBody:'' }));
+    const id=Date.now();
+    this.setState(st=>({ sentNotifs:[{id,color:'#25D366',title:t,text:st.notifBody||'(bez textu)',meta},...st.sentNotifs], notifTitle:'', notifBody:'' }));
+    try{
+      const rec={id,aud:this.state.notifAudience,title:t,text:this.state.notifBody||'',ts:id,by:(this.state.org?this.state.org.name:'Organizátor')};
+      const prev=JSON.parse(localStorage.getItem('t4d_notifs_v1')||'[]');
+      prev.unshift(rec); localStorage.setItem('t4d_notifs_v1',JSON.stringify(prev.slice(0,50)));
+    }catch(e){}
     try{ if(navigator.clipboard) navigator.clipboard.writeText(full); }catch(e){}
     if(this.meta&&this.meta.waAll) window.open(this.meta.waAll,'_blank');
   }

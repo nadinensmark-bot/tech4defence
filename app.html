@@ -335,6 +335,7 @@
           </div>
 
           <!-- rotation schedule -->
+          <sc-if value="{{ showMyRota }}" hint-placeholder-val="{{ true }}">
           <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:8px;margin:22px 0 11px"><span style="width:16px;height:1px;background:var(--green)"></span>Tvůj rozpis diskusních stolů</div>
           <sc-for list="{{ myRounds }}" as="r" hint-placeholder-count="3">
             <div style="display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:13px;padding:13px 14px;margin-bottom:9px">
@@ -354,8 +355,39 @@
               </div>
             </div>
           </sc-for>
+          </sc-if>
 
-          <!-- all groups -->
+          <!-- full rotation matrix (hosté: náhled na točení) -->
+          <sc-if value="{{ showMatrix }}" hint-placeholder-val="{{ false }}">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:8px;margin:22px 0 6px"><span style="width:16px;height:1px;background:var(--green)"></span>Schéma točení účastníků</div>
+          <p style="font-size:12px;color:var(--muted);margin:0 0 11px;line-height:1.5">Zbrojaři i skupiny se mezi 3 zasedačkami střídají. Buňka ukazuje, který zbrojař vede stůl a které skupiny u něj v daném kole sedí.</p>
+          <div style="background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:0.7fr 1fr 1fr 1fr;background:var(--ink)">
+              <div style="padding:9px 8px"></div>
+              <div style="padding:9px 6px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.04em;text-transform:uppercase;font-weight:600;color:#fff;text-align:center;border-left:1px solid rgba(255,255,255,.08)">1. kolo</div>
+              <div style="padding:9px 6px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.04em;text-transform:uppercase;font-weight:600;color:#fff;text-align:center;border-left:1px solid rgba(255,255,255,.08)">2. kolo</div>
+              <div style="padding:9px 6px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.04em;text-transform:uppercase;font-weight:600;color:#fff;text-align:center;border-left:1px solid rgba(255,255,255,.08)">3. kolo</div>
+            </div>
+            <sc-for list="{{ rotaMatrix }}" as="row" hint-placeholder-count="3">
+              <div style="display:grid;grid-template-columns:0.7fr 1fr 1fr 1fr;border-top:1px solid var(--line)">
+                <div style="padding:10px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:var(--mist)">
+                  <div style="width:26px;height:26px;border-radius:7px;background:#13234E;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px">{{ row.room }}</div>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:7.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);text-align:center;line-height:1.2">Zaseda&shy;čka</span>
+                </div>
+                <sc-for list="{{ row.cells }}" as="cell" hint-placeholder-count="3">
+                  <div style="padding:8px 5px;border-left:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:5px">
+                    <span style="font-size:9px;font-weight:600;color:#fff;background:{{ cell.color }};padding:2px 6px;border-radius:20px;text-align:center;line-height:1.2">{{ cell.leader }}</span>
+                    <div style="display:flex;gap:3px;flex-wrap:wrap;justify-content:center">
+                      <sc-for list="{{ cell.groups }}" as="gg" hint-placeholder-count="2">
+                        <span style="width:20px;height:20px;border-radius:6px;background:{{ gg.soft }};color:{{ gg.color }};display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:11px">{{ gg.n }}</span>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+          </sc-if>
           <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:8px;margin:22px 0 11px"><span style="width:16px;height:1px;background:var(--green)"></span>Všech 6 skupin</div>
           <sc-for list="{{ allGroups }}" as="g" hint-placeholder-count="6">
             <div style="display:flex;align-items:center;gap:13px;background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px 14px;margin-bottom:9px">
@@ -469,7 +501,10 @@
             <span style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:16px;color:var(--navy)">Notifikace</span>
             <div onClick="{{ toggleNotif }}" style="width:28px;height:28px;border-radius:8px;background:var(--mist);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:13px">✕</div>
           </div>
-          <sc-for list="{{ notifications }}" as="n" hint-placeholder-count="4">
+          <sc-if value="{{ noNotif }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;padding:42px 22px;color:var(--muted);font-size:13px;line-height:1.6">Zatím žádné notifikace.<br>Organizátoři sem pošlou důležité info během akce.</div>
+          </sc-if>
+          <sc-for list="{{ notifications }}" as="n" hint-placeholder-count="0">
             <div onClick="{{ n.action }}" style="display:flex;gap:11px;padding:13px 17px;border-bottom:1px solid var(--mist);cursor:pointer" style-hover="background:var(--mist)">
               <span style="flex:none;width:9px;height:9px;border-radius:50%;background:{{ n.color }};margin-top:5px"></span>
               <div style="flex:1;min-width:0">
@@ -806,6 +841,13 @@ class Component extends DCLogic {
       chat:[], chatInput:'', unread:2
     };
     this.trackColors = {Keynote:'#1C2F63','Zdravice':'#5C6886','Networking':'#8CAA72','Přestávka':'#9AA4BD','Diskusní stoly':'#6E9152'};
+    this.leaderColors={'LOM PRAHA':'#1C2F63','UAVA Aliance':'#6E9152','VTÚ s.p.':'#2B5CC4'};
+    // rotation matrix (room -> 3 rounds: [leader, [groups]]) — mirrors organizer / xlsx
+    this.rota=[
+      {room:1, cells:[['LOM PRAHA',[1,2]],['UAVA Aliance',[2,5]],['VTÚ s.p.',[4,2]]]},
+      {room:2, cells:[['UAVA Aliance',[3,4]],['VTÚ s.p.',[3,1]],['LOM PRAHA',[3,5]]]},
+      {room:3, cells:[['VTÚ s.p.',[5,6]],['LOM PRAHA',[4,6]],['UAVA Aliance',[1,6]]]}
+    ];
     // safe defaults until module loads
     this.speakers=[]; this.zbrojari=[]; this.firmy=[]; this.groupsData=[]; this.partners=[]; this.waAll='';
     this.program={mainStage:[],networking:[]};
@@ -838,8 +880,28 @@ class Component extends DCLogic {
       let me=null, contacts=[];
       try{ me=JSON.parse(localStorage.getItem('t4d_me_v1')||'null'); }catch(e){}
       try{ contacts=JSON.parse(localStorage.getItem('t4d_contacts_v1')||'[]'); }catch(e){}
-      this.setState({loaded:true, chat:seed, me, contacts, meForm:{...(me||{name:'',company:'',email:'',phone:'',linkedin:''})}});
+      let notifs=[], notifSeen=0;
+      try{ notifs=JSON.parse(localStorage.getItem('t4d_notifs_v1')||'[]'); }catch(e){}
+      try{ notifSeen=parseInt(localStorage.getItem('t4d_notifseen_v1')||'0',10)||0; }catch(e){}
+      this.setState({loaded:true, chat:seed, me, contacts, notifs, notifSeen, meForm:{...(me||{name:'',company:'',email:'',phone:'',linkedin:''})}});
+      this._onStorage=(ev)=>{ if(ev.key==='t4d_notifs_v1'){ try{ this.setState({notifs:JSON.parse(ev.newValue||'[]')}); }catch(e){} } };
+      window.addEventListener('storage', this._onStorage);
+      this._notifPoll=setInterval(()=>{ try{ const cur=localStorage.getItem('t4d_notifs_v1')||'[]'; if(cur!==this._notifRaw){ this._notifRaw=cur; this.setState({notifs:JSON.parse(cur)}); } }catch(e){} }, 4000);
+      this._notifRaw=localStorage.getItem('t4d_notifs_v1')||'[]';
     }catch(e){ console.error('t4d-data load failed', e); this.setState({loaded:true}); }
+  }
+  componentWillUnmount(){ try{ window.removeEventListener('storage', this._onStorage); }catch(e){} try{ clearInterval(this._notifPoll); }catch(e){} }
+  notifFor(me){
+    const list=this.state.notifs||[];
+    const grp = (me && (!me.type||me.type==='firma')) ? (this.firmy?(this.firmy.find(x=>x.id===me.id)||{}).grp:null) : null;
+    const isZ = !!(me && me.type==='zbrojar');
+    return list.filter(n=>{
+      const a=n.aud||'all';
+      if(a==='all') return true;
+      if(a==='zbrojari') return isZ;
+      if(/^sk(\d)$/.test(a)) return grp && ('sk'+grp)===a;
+      return false;
+    });
   }
   go(tab){ return ()=>this.setState({tab, detail:null, notifOpen:false, chatOpen:false, badgeOpen:false}); }
   nav(active){ return active ? (this.props.accent||'#2B5CC4') : '#9AA4BD'; }
@@ -955,8 +1017,12 @@ class Component extends DCLogic {
       return { room:rn, bg:roomBg[rn], border:roomBorder[rn], ink:roomInk[rn], sub:mine.length?roomInk[rn]:'#9AA4BD', note };
     });
 
-    // notifications
-    const notifications=[];
+    // notifications — live feed from organizer (shared localStorage)
+    const fmtTime=(ts)=>{ try{ const d=new Date(ts); return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2); }catch(e){ return ''; } };
+    const audLabel=(a)=>({all:'Všichni',zbrojari:'Zbrojaři',sk1:'Skupina 1',sk2:'Skupina 2',sk3:'Skupina 3',sk4:'Skupina 4',sk5:'Skupina 5',sk6:'Skupina 6'}[a]||'Všichni');
+    const myNotifs=this.notifFor(s.me);
+    const notifications=myNotifs.map(n=>({ color:'#2B5CC4', title:n.title, text:n.text||'', time:audLabel(n.aud)+' · '+fmtTime(n.ts)+(n.by?' · '+n.by:''), action:()=>{} }));
+    const unreadNotif=myNotifs.filter(n=>(n.ts||n.id||0)>(s.notifSeen||0)).length;
 
     const next=this.program.mainStage[0]||{start:'10:00',title:'Zahajovací zdravice'};
     const meObj=s.me||{}; const meCompanyObj=this.firmy.find(x=>x.name===meObj.company);
@@ -971,7 +1037,7 @@ class Component extends DCLogic {
       cHome:this.nav(s.tab==='home'), cProgram:this.nav(s.tab==='program'), cPeople:this.nav(s.tab==='people'), cGroups:this.nav(s.tab==='groups'), cMap:this.nav(s.tab==='map'),
       goHome:this.go('home'), goProgram:this.go('program'), goPeople:this.go('people'), goGroup:this.go('groups'), goMap:this.go('map'),
       goMapParking:()=>this.setState({tab:'map',mapTab:'parking',detail:null,notifOpen:false,badgeOpen:false}),
-      toggleNotif:()=>this.setState(st=>({notifOpen:!st.notifOpen,badgeOpen:false})), notifOpen:s.notifOpen, hasNotif:notifications.length>0, noNotif:notifications.length===0, notifications, bellStroke: dark?'#fff':'#13234E',
+      toggleNotif:()=>this.setState(st=>{ const opening=!st.notifOpen; if(opening){ const maxTs=myNotifs.reduce((m,n)=>Math.max(m,(n.ts||n.id||0)),0); try{ localStorage.setItem('t4d_notifseen_v1',String(maxTs)); }catch(e){} return {notifOpen:true,badgeOpen:false,notifSeen:maxTs}; } return {notifOpen:false}; }), notifOpen:s.notifOpen, hasNotif:unreadNotif>0, noNotif:notifications.length===0, notifications, bellStroke: dark?'#fff':'#13234E',
       stop:(e)=>e.stopPropagation(),
       showBanner:s.banner && (this.props.showMissionBanner!==false), dismissBanner:()=>this.setState({banner:false}),
       // networking hub
@@ -1022,6 +1088,8 @@ class Component extends DCLogic {
       identResults:((s.identSearch||'').trim()? this.firmy.filter(c=>(c.name+' '+(c.person||'')+' '+(c.email||'')).toLowerCase().includes(s.identSearch.trim().toLowerCase())).slice(0,6).map(c=>({id:c.id,name:c.name,person:c.person,ini:c.ini,color:c.color,pick:()=>this.setIdentified(c)})):[]),
       logoutParticipant:()=>this.logoutParticipant(), demoLogin:()=>this.demoLogin(),
       myMembersTop, myMembersCount:(mg.members||[]).length, myRounds:mg.rounds||[],
+      showMyRota:!isGuest, showMatrix:isGuest,
+      rotaMatrix:this.rota.map(r=>({ room:r.room, cells:r.cells.map((c,idx)=>({ round:idx+1, leader:c[0], color:this.leaderColors[c[0]]||'#13234E', groups:c[1].map(n=>{ const g=(this.groupsData||[]).find(x=>x.num===n)||{}; return {n, color:g.color||'#8895AD', soft:g.soft||'#EEF1F6'}; }) })) })),
       allGroups:this.groupsData,
       openChat:()=>this.setState({chatOpen:true,unread:0}), unread:s.unread>0, unreadCount:s.unread,
       // map
