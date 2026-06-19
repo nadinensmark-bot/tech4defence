@@ -54,7 +54,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:#2B5CC4 !impor
       <div style="position:relative">
         <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#7FA6F0;font-weight:600;display:flex;align-items:center;gap:10px"><span style="width:24px;height:1px;background:#7FA6F0"></span>Organizátorský portál</div>
         <h1 style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:46px;line-height:1.05;letter-spacing:-.025em;margin:20px 0 0;max-width:14ch">Řiďte celou akci z&nbsp;jednoho místa</h1>
-        <p style="font-size:16px;line-height:1.6;color:#B6C2DE;max-width:46ch;margin:20px 0 0">Program, 56 firem, 3 obranné firmy, rozřazení do 6 skupin, rotace diskusních stolů, notifikace a check‑in přes QR.</p>
+        <p style="font-size:16px;line-height:1.6;color:#B6C2DE;max-width:46ch;margin:20px 0 0">Program, účastníci, 3 obranné firmy, rozřazení do 6 skupin, rotace diskusních stolů, notifikace a check‑in přes QR.</p>
       </div>
       <div style="position:relative;font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.08em;color:#5E6E92">ORGANIZUJE CZECHINVEST · PII CELETNÁ 19 · 23. 6. 2026</div>
     </div>
@@ -64,7 +64,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:#2B5CC4 !impor
       <p style="font-size:14px;color:var(--muted);margin:8px 0 30px">Organizátorský účet — přístup ke správě akce.</p>
 
       <label style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600">E‑mail</label>
-      <input value="{{ loginEmail }}" onInput="{{ onEmail }}" onKeyDown="{{ onLoginKey }}" placeholder="jmeno@pii.cz" style="width:100%;margin:7px 0 18px;border:1px solid var(--line);background:var(--mist);border-radius:10px;padding:13px 14px;font-size:14.5px;font-family:'IBM Plex Sans',sans-serif;color:var(--navy)">
+      <input value="{{ loginEmail }}" onInput="{{ onEmail }}" onKeyDown="{{ onLoginKey }}" placeholder="jmeno@czechinvest.gov.cz" style="width:100%;margin:7px 0 18px;border:1px solid var(--line);background:var(--mist);border-radius:10px;padding:13px 14px;font-size:14.5px;font-family:'IBM Plex Sans',sans-serif;color:var(--navy)">
 
       <label style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600">Heslo</label>
       <input value="{{ loginPass }}" onInput="{{ onPass }}" onKeyDown="{{ onLoginKey }}" type="password" placeholder="••••••••" style="width:100%;margin:7px 0 6px;border:1px solid var(--line);background:var(--mist);border-radius:10px;padding:13px 14px;font-size:14.5px;font-family:'IBM Plex Sans',sans-serif;color:var(--navy)">
@@ -75,7 +75,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:#2B5CC4 !impor
 
       <div onClick="{{ doLogin }}" style="margin-top:22px;background:var(--navy);color:#fff;border-radius:11px;padding:15px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;cursor:pointer" style-hover="background:#2B5CC4">Přihlásit se</div>
 
-      <a href="app.html" style="margin-top:22px;text-align:center;font-size:13px;color:var(--blue);text-decoration:none;font-weight:600" style-hover="text-decoration:underline">Jste účastník? Otevřít aplikaci →</a>
+      <a href="Defence Hub Connect App.dc.html" style="margin-top:22px;text-align:center;font-size:13px;color:var(--blue);text-decoration:none;font-weight:600" style-hover="text-decoration:underline">Jste účastník? Otevřít aplikaci →</a>
     </div>
   </div>
   </sc-if>
@@ -116,7 +116,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:#2B5CC4 !impor
           <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--muted);margin-top:2px">úterý 23. 6. 2026 · 10:00–14:00 · Pražský inovační institut</div>
         </div>
         <div style="display:flex;align-items:center;gap:12px">
-          <a href="app.html" style="display:flex;align-items:center;gap:7px;background:var(--mist);border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:13px;font-weight:600;color:var(--navy);text-decoration:none" style-hover="border-color:#cdd6e6"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="6" y="3" width="12" height="18" rx="3"/><path d="M11 18h2"/></svg>Náhled aplikace</a>
+          <a href="Defence Hub Connect App.dc.html" style="display:flex;align-items:center;gap:7px;background:var(--mist);border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:13px;font-weight:600;color:var(--navy);text-decoration:none" style-hover="border-color:#cdd6e6"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="6" y="3" width="12" height="18" rx="3"/><path d="M11 18h2"/></svg>Náhled aplikace</a>
           <span style="display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--greenDeep);background:var(--greenSoft);border:1px solid #d8e3cb;padding:8px 12px;border-radius:10px"><span style="width:7px;height:7px;border-radius:50%;background:var(--green);animation:dhpulse 2.4s infinite"></span>LIVE</span>
         </div>
       </div>
@@ -394,7 +394,7 @@ class Component extends DCLogic {
     document.title='TECH4DEFENCE — organizátorský portál';
     try{
       const d=await import('./t4d-data.js');
-      this.companies=d.companies; this.groupsData=d.groups; this.obranne=d.obranneFirmy; this.guests=d.guests||[];
+      this.companies=d.companies.filter(c=>c.id!=='c900'); this.groupsData=d.groups; this.obranne=d.obranneFirmy; this.guests=d.guests||[];
       this.speakers=d.speakers; this.organizers=d.organizers; this.program=d.program; this.meta=d.meta;
       const base=0;
       const init={dataLoaded:true, checkedBase:base};
@@ -488,7 +488,7 @@ class Component extends DCLogic {
     const total=this.companies.length;
     const checkedCount=s.checkedBase+s.checkins.length;
     const stats=[
-      {label:'Registrováno',value:total+8,sub:'firem + hosté',color:'#2B5CC4'},
+      {label:'Registrováno',value:total+((this.guests||[]).length),sub:'firem + hosté',color:'#2B5CC4'},
       {label:'Firmy',value:total,sub:'výrobních firem',color:'#3E7CA8'},
       {label:'Skupiny',value:6,sub:'+ 3 obranné firmy',color:'#6E9152'},
       {label:'Check‑in',value:checkedCount,sub:'odbaveno z '+total,color:'#1C2F63'}
@@ -517,7 +517,7 @@ class Component extends DCLogic {
       loginPass:s.loginPass, onPass:(e)=>this.setState({loginPass:e.target.value,loginError:false}),
       onLoginKey:(e)=>{ if(e.key==='Enter') this.doLogin(); },
       doLogin:()=>this.doLogin(), loginError:s.loginError, loginErrorMsg:'Neplatný e‑mail nebo heslo.',
-      demoEmail:(demoOrg?demoOrg.email:'tereza.markova@pii.cz'), demoPass:(this.meta?this.meta.password:'t4d2026'),
+      demoEmail:(demoOrg?demoOrg.email:'vit.cermak@czechinvest.gov.cz'), demoPass:(this.meta?this.meta.password:'t4d2026'),
       // sidebar / org
       setPrehled:setNav('prehled'), setProgram:setNav('program'), setFirmy:setNav('firmy'), setSkupiny:setNav('skupiny'), setNotif:setNav('notifikace'), setCheckin:setNav('checkin'),
       stylePrehled:this.navStyle(s.nav==='prehled'), styleProgram:this.navStyle(s.nav==='program'), styleFirmy:this.navStyle(s.nav==='firmy'), styleSkupiny:this.navStyle(s.nav==='skupiny'), styleNotif:this.navStyle(s.nav==='notifikace'), styleCheckin:this.navStyle(s.nav==='checkin'),

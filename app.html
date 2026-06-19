@@ -122,7 +122,7 @@
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 16px 0">
             <div onClick="{{ goGroup }}" style="background:var(--ink);color:#fff;border-radius:14px;padding:15px;cursor:pointer;display:flex;flex-direction:column;gap:9px;border-top:3px solid #8CAA72">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8CAA72" stroke-width="1.8"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>
-              <div><div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px">Moje skupina</div><div style="font-size:11px;color:#9DABCB;margin-top:1px">{{ myGroupLabel }} · chat</div></div>
+              <div><div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px">Moje skupina</div><div style="font-size:11px;color:#9DABCB;margin-top:1px">{{ myGroupLabel }} · rozpis stolů</div></div>
             </div>
             <div onClick="{{ goPeople }}" style="background:#fff;border:1px solid var(--line);border-top:3px solid #3E7CA8;border-radius:14px;padding:15px;cursor:pointer;display:flex;flex-direction:column;gap:9px">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3E7CA8" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M3 19c0-3.3 2.7-5 6-5s6 1.7 6 5"/><path d="M16 6.4a3 3 0 0 1 0 5.8M18 13.4c2.2.5 3.6 1.9 3.6 4.4"/></svg>
@@ -609,35 +609,6 @@
       </div>
       </sc-if>
 
-      <!-- ============ CHAT SHEET ============ -->
-      <sc-if value="{{ chatOpen }}" hint-placeholder-val="{{ false }}">
-      <div style="position:absolute;inset:0;z-index:80;background:var(--paper);display:flex;flex-direction:column;">
-        <div style="flex:none;background:#13234E;color:#fff;padding:34px 16px 13px;display:flex;align-items:center;gap:11px">
-          <div onClick="{{ closeChat }}" style="flex:none;width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></div>
-          <div style="flex:none;width:38px;height:38px;border-radius:11px;background:{{ myGroupColor }};display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;color:#0B1530">{{ myGroupNum }}</div>
-          <div style="flex:1;min-width:0"><div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;line-height:1.1">{{ myGroupLabel }}</div><div style="font-size:11px;color:#9DABCB">{{ myMembersCount }} firem · diskusní stoly</div></div>
-        </div>
-        <div class="dhscroll" style="flex:1;min-height:0;overflow-y:auto;padding:16px 14px;display:flex;flex-direction:column;gap:11px">
-          <div style="text-align:center;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#aab2c6">Dnes</div>
-          <sc-for list="{{ messages }}" as="m" hint-placeholder-count="4">
-            <div style="display:flex;gap:8px;{{ m.justify }}">
-              <sc-if value="{{ m.showAvatar }}" hint-placeholder-val="{{ false }}">
-                <div style="flex:none;width:30px;height:30px;border-radius:50%;background:{{ m.color }};display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:11px;align-self:flex-end">{{ m.initials }}</div>
-              </sc-if>
-              <div style="max-width:74%">
-                <sc-if value="{{ m.showName }}" hint-placeholder-val="{{ false }}"><div style="font-size:10.5px;color:var(--muted);margin:0 0 3px 4px;font-weight:600">{{ m.name }}</div></sc-if>
-                <div style="background:{{ m.bubbleBg }};color:{{ m.bubbleColor }};border:{{ m.bubbleBorder }};padding:9px 13px;border-radius:{{ m.radius }};font-size:13.5px;line-height:1.4">{{ m.text }}</div>
-              </div>
-            </div>
-          </sc-for>
-        </div>
-        <div style="flex:none;border-top:1px solid var(--line);background:#fff;padding:10px 12px;display:flex;align-items:center;gap:9px">
-          <input value="{{ chatInput }}" onInput="{{ onChatInput }}" onKeyDown="{{ onChatKey }}" placeholder="Napsat zprávu…" style="flex:1;border:1px solid var(--line);background:var(--mist);border-radius:22px;padding:11px 15px;font-size:13.5px;font-family:'IBM Plex Sans',sans-serif;color:var(--navy);outline:none">
-          <div onClick="{{ sendChat }}" style="flex:none;width:42px;height:42px;border-radius:50%;background:#2B5CC4;display:flex;align-items:center;justify-content:center;cursor:pointer" style-hover="background:#3E72E0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></div>
-        </div>
-      </div>
-      </sc-if>
-
       <!-- ============ NETWORKING HUB ============ -->
       <sc-if value="{{ badgeOpen }}" hint-placeholder-val="{{ false }}">
       <div onClick="{{ closeBadge }}" style="position:absolute;inset:0;z-index:85;background:rgba(8,15,34,.55);backdrop-filter:blur(3px);display:flex;flex-direction:column;justify-content:flex-end">
@@ -835,10 +806,9 @@ class Component extends DCLogic {
     this.rootRef = React.createRef();
     this.state = {
       loaded:false, tab:'home', peopleTab:'speakers', mapTab:'areal', progTab:'main',
-      fav:{}, pplSearch:'', detail:null, notifOpen:false, chatOpen:false, badgeOpen:false, banner:true,
+      fav:{}, pplSearch:'', detail:null, notifOpen:false, badgeOpen:false, banner:true,
       badgeTab:'vizitka', me:null, meEdit:false, meForm:{name:'',company:'',email:'',phone:'',linkedin:''}, meCompanySearch:'', contacts:[], scanMsg:'', scanning:false, manualInput:'',
-      identEmail:'', identErr:false, identSearch:'', ticketOpen:false, orgOpen:false,
-      chat:[], chatInput:'', unread:2
+      identEmail:'', identErr:false, identSearch:'', ticketOpen:false, orgOpen:false
     };
     this.trackColors = {Keynote:'#1C2F63','Zdravice':'#5C6886','Networking':'#8CAA72','Přestávka':'#9AA4BD','Diskusní stoly':'#6E9152'};
     this.leaderColors={'LOM PRAHA':'#1C2F63','UAVA Aliance':'#6E9152','VTÚ s.p.':'#2B5CC4'};
@@ -852,7 +822,6 @@ class Component extends DCLogic {
     this.speakers=[]; this.zbrojari=[]; this.firmy=[]; this.groupsData=[]; this.partners=[]; this.waAll='';
     this.program={mainStage:[],networking:[]};
     this.myGroup={num:'',label:'Skupina',color:'#6E9152',soft:'#ECF1E5',range:'',members:[],rounds:[]};
-    this.demoUser={id:'',name:'Účastník',company:'',ini:'··',color:'#2B5CC4',group:0};
   }
   async componentDidMount(){
     document.title = (this.props.eventName||'TECH4DEFENCE')+' — aplikace';
@@ -867,23 +836,14 @@ class Component extends DCLogic {
       this.organizers = d.organizers || [];
       this.guests = d.guests || [];
       this.program = d.program;
-      this.demoUser = d.demoUser;
       this.myGroup = d.groups.find(g=>g.mine) || d.groups[0];
-      const mem=this.myGroup.members;
-      const r1=this.myGroup.rounds[0];
-      const seed=[
-        {id:1,who:'Tereza Marková · facilitátorka',ini:'TM',col:'#2B5CC4',text:'Vítejte ve '+this.myGroup.label+'! Začínáme v 10:20 v Zasedačce '+r1.room+' — diskusi vede '+r1.leader+'.'},
-        {id:2,who:(mem[0]?mem[0].person:'Účastník'),ini:(mem[0]?mem[0].ini:'??'),col:(mem[0]?mem[0].color:'#1C2F63'),text:'Díky! Těším se na ostatní z naší skupiny.'},
-        {id:3,who:(mem[1]?mem[1].person:'Účastník'),ini:(mem[1]?mem[1].ini:'??'),col:(mem[1]?mem[1].color:'#3E7CA8'),text:'Můžeme se po prvním kole domluvit na konkrétní spolupráci?'},
-        {id:4,who:'Tereza Marková · facilitátorka',ini:'TM',col:'#2B5CC4',text:'Jasně. Rozpis všech tří kol máte v appce v záložce Skupiny.'}
-      ];
       let me=null, contacts=[];
       try{ me=JSON.parse(localStorage.getItem('t4d_me_v1')||'null'); }catch(e){}
       try{ contacts=JSON.parse(localStorage.getItem('t4d_contacts_v1')||'[]'); }catch(e){}
       let notifs=[], notifSeen=0;
       try{ notifs=JSON.parse(localStorage.getItem('t4d_notifs_v1')||'[]'); }catch(e){}
       try{ notifSeen=parseInt(localStorage.getItem('t4d_notifseen_v1')||'0',10)||0; }catch(e){}
-      this.setState({loaded:true, chat:seed, me, contacts, notifs, notifSeen, meForm:{...(me||{name:'',company:'',email:'',phone:'',linkedin:''})}});
+      this.setState({loaded:true, me, contacts, notifs, notifSeen, meForm:{...(me||{name:'',company:'',email:'',phone:'',linkedin:''})}});
       this._onStorage=(ev)=>{ if(ev.key==='t4d_notifs_v1'){ try{ this.setState({notifs:JSON.parse(ev.newValue||'[]')}); }catch(e){} } };
       window.addEventListener('storage', this._onStorage);
       this._notifPoll=setInterval(()=>{ try{ const cur=localStorage.getItem('t4d_notifs_v1')||'[]'; if(cur!==this._notifRaw){ this._notifRaw=cur; this.setState({notifs:JSON.parse(cur)}); } }catch(e){} }, 4000);
@@ -903,7 +863,7 @@ class Component extends DCLogic {
       return false;
     });
   }
-  go(tab){ return ()=>this.setState({tab, detail:null, notifOpen:false, chatOpen:false, badgeOpen:false}); }
+  go(tab){ return ()=>this.setState({tab, detail:null, notifOpen:false, badgeOpen:false}); }
   nav(active){ return active ? (this.props.accent||'#2B5CC4') : '#9AA4BD'; }
   seg(active){ const base='flex:1;text-align:center;padding:9px 4px;border-radius:9px;font-size:12.5px;font-weight:600;font-family:\'Space Grotesk\',sans-serif;cursor:pointer;transition:.15s;'; return base + (active ? 'background:#fff;color:#13234E;box-shadow:0 2px 8px -3px rgba(19,35,78,.3)' : 'background:transparent;color:#5C6886'); }
   renderVals(){
@@ -935,7 +895,7 @@ class Component extends DCLogic {
     const q=s.pplSearch.trim().toLowerCase();
     const fSpk=this.speakers.filter(p=>!q||(p.name+p.role+p.org+p.tag).toLowerCase().includes(q));
     const fZbr=this.zbrojari.filter(p=>!q||(p.name+p.makes+p.looking).toLowerCase().includes(q));
-    const fFirm=this.firmy.filter(p=>!q||(p.name+' '+p.desc+' '+p.person+' '+p.cat).toLowerCase().includes(q));
+    const fFirm=this.firmy.filter(p=>p.id!=='c900').filter(p=>!q||(p.name+' '+p.desc+' '+p.person+' '+p.cat).toLowerCase().includes(q));
     const speakers=fSpk.map(p=>({...p, open:()=>this.setState({detail:{kind:'person',ptype:'speaker',id:p.id}})}));
     const zbrojari=fZbr.map(p=>({...p, open:()=>this.setState({detail:{kind:'person',ptype:'zbrojar',id:p.id}})}));
     const firmy=fFirm.map(p=>({...p, grpLabel:'Skupina '+p.grp, grpColor:(groupColors[p.grp]||'#5C6886'), grpSoft:(groupSoft[p.grp]||'#F3F5F9'),
@@ -995,19 +955,6 @@ class Component extends DCLogic {
           showMap:()=>this.setState({detail:null,tab:'map',mapTab:'areal'}) };
       }
     }
-
-    // chat grouping
-    const messages=s.chat.map((m,i)=>{
-      const me=m.who==='Ty';
-      const prev=s.chat[i-1];
-      const showAvatar = !me && (!prev || prev.who!==m.who);
-      return { id:m.id, name:m.who, initials:m.ini, color:m.col, text:m.text, me,
-        justify: me?'justify-content:flex-end':'justify-content:flex-start',
-        showAvatar, showName:showAvatar,
-        bubbleBg: me?accentVar:'#fff', bubbleColor: me?'#fff':'#13234E',
-        bubbleBorder: me?'none':'1px solid #E2E7F0',
-        radius: me?'16px 16px 4px 16px':'16px 16px 16px 4px' };
-    });
 
     // map rooms
     const roomBg={1:'#E8EEFA',2:'#ECF1E5',3:'#EAEFF6'}, roomBorder={1:'#cdd9f0',2:'#d8e3cb',3:'#d4ddec'}, roomInk={1:'#2B5CC4',2:'#6E9152',3:'#46618F'};
@@ -1076,7 +1023,7 @@ class Component extends DCLogic {
       spkStyle:this.seg(s.peopleTab==='speakers'), zbrStyle:this.seg(s.peopleTab==='zbrojari'), firmStyle:this.seg(s.peopleTab==='firmy'),
       setSpk:()=>this.setState({peopleTab:'speakers'}), setZbr:()=>this.setState({peopleTab:'zbrojari'}), setFirm:()=>this.setState({peopleTab:'firmy'}),
       tabSpk:s.peopleTab==='speakers', tabZbr:s.peopleTab==='zbrojari', tabFirm:s.peopleTab==='firmy',
-      speakers, zbrojari, firmy, peopleEmpty:curEmpty, firmCount:this.firmy.length, firmShownCount:firmy.length,
+      speakers, zbrojari, firmy, peopleEmpty:curEmpty, firmCount:this.firmy.filter(c=>c.id!=='c900').length, firmShownCount:firmy.length,
       // groups
       myGroupNum:mg.num, myGroupLabel:mg.label, myGroupColor:mg.color, myGroupRange:mg.range, myGroupWa:(mg.wa||'#'),
       needLogin:!identified, identified, myCode, checkinQrImg, isGuest, myAssign, myMembersLine,
@@ -1087,11 +1034,10 @@ class Component extends DCLogic {
       identSearch:s.identSearch, onIdentSearch:(e)=>this.setState({identSearch:e.target.value}),
       identResults:((s.identSearch||'').trim()? this.firmy.filter(c=>(c.name+' '+(c.person||'')+' '+(c.email||'')).toLowerCase().includes(s.identSearch.trim().toLowerCase())).slice(0,6).map(c=>({id:c.id,name:c.name,person:c.person,ini:c.ini,color:c.color,pick:()=>this.setIdentified(c)})):[]),
       logoutParticipant:()=>this.logoutParticipant(), demoLogin:()=>this.demoLogin(),
-      myMembersTop, myMembersCount:(mg.members||[]).length, myRounds:mg.rounds||[],
+      myMembersTop, myRounds:mg.rounds||[],
       showMyRota:!isGuest, showMatrix:isGuest,
       rotaMatrix:this.rota.map(r=>({ room:r.room, cells:r.cells.map((c,idx)=>({ round:idx+1, leader:c[0], color:this.leaderColors[c[0]]||'#13234E', groups:c[1].map(n=>{ const g=(this.groupsData||[]).find(x=>x.num===n)||{}; return {n, color:g.color||'#8895AD', soft:g.soft||'#EEF1F6'}; }) })) })),
       allGroups:this.groupsData,
-      openChat:()=>this.setState({chatOpen:true,unread:0}), unread:s.unread>0, unreadCount:s.unread,
       // map
       arealStyle:this.seg(s.mapTab==='areal'), parkStyle:this.seg(s.mapTab==='parking'),
       setAreal:()=>this.setState({mapTab:'areal'}), setPark:()=>this.setState({mapTab:'parking'}),
@@ -1103,17 +1049,8 @@ class Component extends DCLogic {
         {name:'Garáže Slovanský dům',note:'Na Příkopě 22',color:'#46618F',walk:'7 min',mapUrl:'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent('Garáže Slovanský dům, Na Příkopě 22, Praha')}
       ],
       // detail
-      hasDetail, detailIsPerson, detailIsSession, dp, ds, closeDetail:()=>this.setState({detail:null}),
-      // chat
-      chatOpen:s.chatOpen, closeChat:()=>this.setState({chatOpen:false}), messages,
-      chatInput:s.chatInput, onChatInput:(e)=>this.setState({chatInput:e.target.value}),
-      onChatKey:(e)=>{ if(e.key==='Enter') this.doSend(); },
-      sendChat:()=>this.doSend()
+      hasDetail, detailIsPerson, detailIsSession, dp, ds, closeDetail:()=>this.setState({detail:null})
     };
-  }
-  doSend(){
-    const t=this.state.chatInput.trim(); if(!t) return;
-    this.setState(st=>({ chat:[...st.chat,{id:Date.now(),who:'Ty',ini:'TY',col:'#2B5CC4',text:t}], chatInput:'' }));
   }
   digits(p){ return (p||'').replace(/[^\d]/g,''); }
   waUrl(p){ const d=this.digits(p); return d?('https://wa.me/'+d):''; }
