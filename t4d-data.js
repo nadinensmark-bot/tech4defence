@@ -74,9 +74,9 @@ export const companies = [
   "id": "c5",
   "name": "ARTIN spol. s.r.o.",
   "desc": "Dodáváme komplexní IT řešení – od umělé inteligence přes vývoj softwaru na míru až po zpracování a analýzu dat. Máme zkušenosti s projekty pro švýcarskou armádu, kde jsou klíčové požadavky na datovou suverenitu a vysokou úroveň bezpečnosti. Vyvinuli jsme Defect Management System pro strukturovaný sběr dat o závadách, jejich analýzu a plánování údržby. Dodali jsme také systém pro vizualizaci a zpracování dat z vojenských cvičení, například údajů ze senzorů na vestách vojáků.",
-  "person": "Martina Pokorná",
-  "role": "Head of Sales",
-  "email": "martina.pokorna@artin.eu",
+  "person": "Martin Mádle",
+  "role": "Business Development Manager",
+  "email": "martin.madle@artin.cz",
   "cat": "Software & AI",
   "color": "#3E7CA8",
   "ini": "AS",
@@ -1001,7 +1001,7 @@ export const groups = [
     "name": "ARTIN spol. s.r.o.",
     "ini": "AS",
     "color": "#3E7CA8",
-    "person": "Martina Pokorná"
+    "person": "Martin Mádle"
    },
    {
     "id": "cawos",
