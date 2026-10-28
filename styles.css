@@ -1,0 +1,123 @@
+:root{
+  --ink:#0B1530; --navy:#13234E; --blue:#2B5CC4; --blueSoft:#E8EEFA;
+  --green:#8CAA72; --greenDeep:#6E9152; --greenSoft:#ECF1E5;
+  --paper:#FBFBFC; --mist:#F3F5F9; --line:#E2E7F0; --muted:#5C6886;
+  --danger:#C62828; --warn:#B26A00; --warnSoft:#FFF4E0;
+  --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font:16px/1.55 'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:'Space Grotesk',sans-serif;line-height:1.15;margin:0 0 .5em;letter-spacing:-.01em}
+h1{font-size:clamp(28px,5vw,40px)} h2{font-size:24px} h3{font-size:18px}
+a{color:var(--blue)}
+.mono{font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:.02em}
+.muted{color:var(--muted)}
+.wrap{max-width:1100px;margin:0 auto;padding:0 16px}
+
+header.top{background:var(--navy);color:#fff}
+header.top .wrap{display:flex;align-items:center;gap:16px;min-height:64px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
+header.top .logos{display:flex;align-items:center;gap:14px}
+header.top .logos img{height:30px;width:auto;display:block}
+header.top .logos img.diana{height:24px}
+header.top .spacer{flex:1}
+header.top .who{font-size:13px;opacity:.8}
+header.top button{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.35)}
+header.top button:hover{background:rgba(255,255,255,.1)}
+.demo-bar{background:var(--warnSoft);color:var(--warn);font-size:14px;padding:8px 16px;text-align:center}
+
+.hero{background:var(--navy);color:#fff;padding:28px 0 36px}
+.hero .sub{opacity:.85;font-size:18px;margin:0}
+.hero .meta{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:16px;opacity:.9;font-size:15px}
+
+main{padding:24px 0 64px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 20px}
+.tabs a{padding:8px 14px;border-radius:999px;text-decoration:none;color:var(--navy);background:var(--mist);font-weight:500;font-size:15px}
+.tabs a.on{background:var(--navy);color:#fff}
+
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+
+button,.btn{font:inherit;font-size:15px;font-weight:500;border-radius:10px;padding:9px 16px;border:1px solid var(--navy);background:var(--navy);color:#fff;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+button.ghost,.btn.ghost{background:#fff;color:var(--navy);border-color:var(--line)}
+button.ghost:hover{border-color:var(--navy)}
+button.danger{background:#fff;color:var(--danger);border-color:#F1C9C9}
+button.small,.btn.small{padding:5px 10px;font-size:13px}
+button:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+label{display:block;font-size:14px;font-weight:500;margin:0 0 12px}
+label span{display:block;margin-bottom:4px;color:var(--muted);font-weight:500}
+input,select,textarea{font:inherit;font-size:15px;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+textarea{min-height:90px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--blueSoft);border-color:var(--blue)}
+.check{display:flex;gap:8px;align-items:center;font-weight:400}
+.check input{width:auto}
+
+.login{max-width:440px;margin:48px auto}
+.notice{padding:12px 14px;border-radius:10px;background:var(--greenSoft);color:#2f4a1d;font-size:15px}
+.notice.warn{background:var(--warnSoft);color:var(--warn)}
+.notice.err{background:#FDECEC;color:var(--danger)}
+
+/* Jmenovka a točení */
+.badge{display:flex;align-items:center;gap:16px;padding:18px 20px;border-radius:var(--radius);color:#fff}
+.badge .num{font-family:'Space Grotesk',sans-serif;font-size:44px;font-weight:700;line-height:1}
+.badge .txt{font-size:15px}
+.badge .txt b{display:block;font-size:20px}
+.dot{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;border:1px solid rgba(0,0,0,.15)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 6px;border-radius:999px;background:var(--mist);font-size:14px;margin:2px 4px 2px 0;white-space:nowrap}
+.chip.me{background:var(--navy);color:#fff}
+.round{display:grid;grid-template-columns:72px 1fr;gap:14px;padding:16px 0}
+.round + .round{border-top:1px solid var(--line)}
+.round .rn{font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;color:var(--navy);line-height:1}
+.round .rn small{display:block;font:12px 'IBM Plex Mono',monospace;color:var(--muted);margin-top:6px}
+.round .room{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:600}
+.round .lead{margin:4px 0}
+
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+td select,td input{padding:5px 7px;font-size:13px;min-width:120px}
+.matrix label.chip{display:inline-flex;margin:2px 4px 2px 0;font-weight:400;cursor:pointer}
+.matrix label.chip input{width:auto;min-width:0;margin:0}
+.matrix td{min-width:170px}
+.matrix td.hl{background:var(--blueSoft)}
+
+.prog{display:grid;grid-template-columns:110px 1fr;gap:6px 16px;padding:12px 0}
+.prog + .prog{border-top:1px solid var(--line)}
+.prog .t{font-family:'IBM Plex Mono',monospace;color:var(--navy);font-weight:500}
+
+.firm h3{margin-bottom:4px}
+.stat{font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;color:var(--navy)}
+.warnlist{margin:0;padding-left:18px;color:var(--warn)}
+.oklist{color:var(--greenDeep);margin:0}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:20;max-width:calc(100% - 32px)}
+
+/* Tisk jmenovek */
+.tags{display:grid;grid-template-columns:repeat(auto-fill,90mm);gap:6mm;justify-content:center}
+.tag{width:90mm;height:55mm;border:1px solid #ccc;border-radius:3mm;overflow:hidden;display:flex;flex-direction:column;break-inside:avoid;background:#fff}
+.tag .band{height:13mm;display:flex;align-items:center;justify-content:space-between;padding:0 5mm;color:#fff;font:700 15pt 'Space Grotesk',sans-serif}
+.tag .body{padding:4mm 5mm;flex:1;display:flex;flex-direction:column;justify-content:center}
+.tag .n{font:700 17pt/1.1 'Space Grotesk',sans-serif;color:#0B1530}
+.tag .c{font-size:11pt;color:#5C6886;margin-top:2mm}
+.tag .ev{font:8pt 'IBM Plex Mono',monospace;color:#5C6886;padding:0 5mm 3mm}
+@media print{
+  header.top,.demo-bar,.noprint,.tabs{display:none!important}
+  body{background:#fff} main{padding:0} .wrap{max-width:none;padding:0}
+  .tag .band{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .tags{grid-template-columns:repeat(2,90mm)}
+  @page{size:A4;margin:10mm}
+}
+@media (max-width:560px){
+  .round{grid-template-columns:52px 1fr}
+  .prog{grid-template-columns:1fr}
+  header.top .who{display:none}
+}
+
+/* Načítání: Hubík na koni */
+.loader{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;gap:6px}
+.loader video{width:200px;height:200px;object-fit:cover;border-radius:50%}
+.loader p{font-family:'Space Grotesk',sans-serif;color:var(--navy);font-weight:600;margin:0}
