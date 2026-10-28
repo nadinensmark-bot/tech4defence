@@ -2,14 +2,14 @@
 import { DEMO_DATA } from './demo-data.js';
 
 const cfg = window.T4D_CONFIG || {};
-export const DEMO = !cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY;
+export const DEMO = !cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY || new URLSearchParams(location.search).has('demo');
 
 function err(e) { if (e) throw new Error(e.message || String(e)); }
 
 // ---------- SUPABASE ----------
 function supabaseApi() {
   const sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, {
-    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' },
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'implicit' },
   });
   const email = async () => (await sb.auth.getSession()).data.session?.user?.email?.toLowerCase() || null;
 
@@ -81,6 +81,16 @@ function supabaseApi() {
     async confirmAllRegistered(eventId) {
       err((await sb.from('participants').update({ status: 'confirmed' }).eq('event_id', eventId).eq('status', 'registered')).error);
     },
+    // ---- matchmaking ----
+    async mmList(eventId) { const { data, error } = await sb.rpc('mm_list', { p_event: eventId }); err(error); return data || []; },
+    async mmRequest(to, message) { const { data, error } = await sb.rpc('mm_request', { p_to: to, p_message: message || null }); err(error); return data; },
+    async mmRespond(connId, accept) { err((await sb.rpc('mm_respond', { p_conn: connId, p_accept: accept })).error); },
+    async mmContacts(eventId) { const { data, error } = await sb.rpc('mm_contacts', { p_event: eventId }); err(error); return data || []; },
+    async mmScan(token) { const { data, error } = await sb.rpc('mm_scan', { p_token: token }); err(error); return data; },
+    async connectionCount(eventId) {
+      const { count, error } = await sb.from('connections').select('id', { count: 'exact', head: true }).eq('event_id', eventId).eq('status', 'accepted');
+      err(error); return count || 0;
+    },
   };
 }
 
@@ -117,7 +127,7 @@ function demoApi() {
     },
     async updateMyProfile(eventId, patch) {
       const p = db.participants.find(x => x.event_id === eventId && x.email === me());
-      for (const k of ['full_name', 'position', 'phone', 'web', 'description', 'sector', 'reasons']) if (k in patch) p[k] = patch[k];
+      for (const k of ['full_name', 'position', 'phone', 'web', 'description', 'sector', 'reasons', 'in_matchmaking']) if (k in patch) p[k] = patch[k];
       return p;
     },
     async directory(eventId) {
@@ -150,6 +160,41 @@ function demoApi() {
     async updateParticipants(list) { for (const { id, ...p } of list) await this.updateParticipant(id, p); },
     async deleteParticipant(id) { db.participants = db.participants.filter(p => p.id !== id); },
     async confirmAllRegistered(eventId) { byEvent('participants', eventId).filter(p => p.status === 'registered').forEach(p => p.status = 'confirmed'); },
+    // ---- matchmaking (demo) ----
+    _me(eventId) { return db.participants.find(p => p.event_id === eventId && p.email === me()); },
+    _conn(a, b) { return db.connections.find(c => (c.from_id === a && c.to_id === b) || (c.from_id === b && c.to_id === a)); },
+    async mmList(eventId) {
+      const m = this._me(eventId); const ev = db.events.find(e => e.id === eventId); if (!m || !ev?.directory_enabled) return [];
+      return byEvent('participants', eventId).filter(p => p.id !== m.id && p.status === 'confirmed' && p.in_matchmaking !== false).map(p => {
+        const c = this._conn(m.id, p.id);
+        const st = !c ? 'none' : c.status === 'accepted' ? 'connected' : c.status === 'declined' ? 'declined' : c.from_id === m.id ? 'sent' : 'received';
+        const { email, phone, ...pub } = p; return { ...pub, conn_id: c?.id || null, conn_status: st };
+      });
+    },
+    async mmRequest(to, message) {
+      const t = db.participants.find(p => p.id === to); const m = this._me(t.event_id); const c = this._conn(m.id, to);
+      if (c && c.from_id === to && c.status === 'pending') { c.status = 'accepted'; return 'connected'; }
+      if (!c) db.connections.push({ id: uid(), event_id: t.event_id, from_id: m.id, to_id: to, status: 'pending', source: 'request', message: message || null, created_at: new Date().toISOString() });
+      return 'sent';
+    },
+    async mmRespond(connId, accept) { const c = db.connections.find(x => x.id === connId); c.status = accept ? 'accepted' : 'declined'; },
+    async mmContacts(eventId) {
+      const m = this._me(eventId); if (!m) return [];
+      return db.connections.filter(c => c.event_id === eventId && (c.from_id === m.id || c.to_id === m.id)).map(c => {
+        const o = db.participants.find(p => p.id === (c.from_id === m.id ? c.to_id : c.from_id)); const ok = c.status === 'accepted';
+        return { conn_id: c.id, direction: c.from_id === m.id ? 'out' : 'in', status: c.status, source: c.source, message: c.message, created_at: c.created_at,
+          id: o.id, company: o.company, full_name: o.full_name, position: o.position, sector: o.sector, web: o.web, group_no: o.group_no,
+          email: ok ? o.email : null, phone: ok ? o.phone : null };
+      });
+    },
+    async mmScan(token) {
+      const o = db.participants.find(p => p.card_token === token); if (!o) throw new Error('not_found');
+      const m = this._me(o.event_id); if (!m) throw new Error('not_participant');
+      if (m.id !== o.id) { const c = this._conn(m.id, o.id); if (c) c.status = 'accepted'; else db.connections.push({ id: uid(), event_id: o.event_id, from_id: m.id, to_id: o.id, status: 'accepted', source: 'qr', created_at: new Date().toISOString() }); }
+      const ev = db.events.find(e => e.id === o.event_id);
+      return { self: m.id === o.id, event_id: o.event_id, event_name: ev.name, event_date: ev.date, company: o.company, full_name: o.full_name, position: o.position, email: o.email, phone: o.phone, web: o.web };
+    },
+    async connectionCount(eventId) { return db.connections.filter(c => c.event_id === eventId && c.status === 'accepted').length; },
   };
 }
 

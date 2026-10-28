@@ -434,3 +434,7 @@ grant execute on function public.mm_respond(uuid, boolean) to authenticated;
 grant execute on function public.mm_contacts(uuid) to authenticated;
 grant execute on function public.mm_scan(text) to authenticated;
 grant execute on function public.my_pid(uuid) to authenticated;
+
+-- Anonymní role nesmí na žádnou tabulku (data čte jen přihlášený uživatel přes RLS)
+revoke all on all tables in schema public from anon;
+alter default privileges in schema public revoke all on tables from anon;

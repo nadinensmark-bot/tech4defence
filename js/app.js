@@ -40,9 +40,10 @@ function bindHeader() { $('#logout')?.addEventListener('click', async () => { aw
 function page(inner) { app.innerHTML = header() + inner; bindHeader(); }
 
 // ---------- PŘIHLÁŠENÍ ----------
-function viewLogin() {
+function viewLogin(scanNote = false) {
   page(`<main><div class="wrap"><div class="login card">
     <h1>TECH4DEFENCE</h1>
+    ${scanNote ? `<div class="notice" style="margin-bottom:12px">Naskenovali jste vizitku účastníka. Po přihlášení si s ním vyměníte kontakt.</div>` : ''}
     <p class="muted">Přihlaste se e-mailem, který jste uvedli v${' '}registračním formuláři. Pošleme vám odkaz, heslo není potřeba.</p>
     <form id="lf"><label><span>E-mail</span><input type="email" name="email" required autocomplete="email" placeholder="jmeno@firma.cz"></label>
     <button type="submit">Poslat přihlašovací odkaz</button></form>
@@ -138,6 +139,7 @@ function profileHtml(me) {
     ${f('sector', 'Sektor firmy')}
     <label><span>Medailonek firmy (čím může být přínosná pro obranný průmysl)</span><textarea name="description" rows="5">${esc(me.description)}</textarea></label>
     <label><span>Proč se účastním</span><textarea name="reasons" rows="3">${esc(me.reasons)}</textarea></label>
+    <label class="check"><input type="checkbox" name="in_matchmaking" ${me.in_matchmaking !== false ? 'checked' : ''}> Zobrazit mou firmu v${'\u00a0'}matchmakingu (telefon a${'\u00a0'}e-mail uvidí jen ti, se kterými se propojíte)</label>
     <button type="submit">Uložit profil</button></form>`;
 }
 
@@ -147,24 +149,162 @@ async function viewEvent(id, tab = 'toceni') {
   const me = regs.find(r => r.event_id === id);
   if (!me) { location.hash = '#/'; return; }
   const b = await api.eventBundle(id);
-  const tabs = [['toceni', 'Moje točení'], ['program', 'Program'], ['profil', 'Profil']];
-  if (b.event.directory_enabled) tabs.push(['firmy', 'Firmy na akci']);
-  let body = '';
+  const tabs = [['toceni', 'Moje točení']];
+  if (b.event.directory_enabled) tabs.push(['matchmaking', 'Matchmaking']);
+  tabs.push(['kontakty', 'Kontakty'], ['program', 'Program'], ['profil', 'Profil']);
+  let body = '', after = null;
   if (tab === 'program') body = programHtml(b);
   else if (tab === 'profil') body = profileHtml(me);
-  else if (tab === 'firmy') {
-    const list = await api.directory(id);
-    body = `<div class="grid g2">${list.map(p => { const g = b.groups.find(x => x.group_no === p.group_no);
-      return `<div class="card firm"><h3>${esc(p.company)}</h3><div class="row">${g ? `<span class="chip"><i class="dot" style="background:${esc(g.color_hex)}"></i>Skupina ${g.group_no}</span>` : ''}${p.kind !== 'civil' ? `<span class="chip">${esc(KIND[p.kind])}</span>` : ''}<span class="muted">${esc(p.sector || '')}</span></div>
-        ${p.description ? `<p>${nb(p.description)}</p>` : ''}${p.web ? `<a target="_blank" rel="noopener" href="${esc(/^https?:/i.test(p.web) ? p.web : 'https://' + p.web)}">${esc(p.web)}</a>` : ''}</div>`; }).join('') || '<p class="muted">Seznam zatím není zveřejněný.</p>'}</div>`;
-  } else body = myRotation(b, me);
+  else if (tab === 'matchmaking' && b.event.directory_enabled) ({ html: body, after } = await mmView(b, me, id));
+  else if (tab === 'kontakty') ({ html: body, after } = await contactsView(b, me, id));
+  else body = myRotation(b, me);
   page(hero(b.event) + `<main><div class="wrap">
     ${me.status === 'registered' ? `<div class="notice warn" style="margin-bottom:16px">Vaše registrace čeká na potvrzení organizátorů. O${' '}potvrzení vás budeme informovat e-mailem.</div>` : ''}
     <nav class="tabs">${tabs.map(([k, l]) => `<a href="#/e/${id}/${k}" class="${k === tab ? 'on' : ''}">${l}</a>`).join('')}</nav>${body}</div></main>`);
+  if (after) await after();
   $('#pf')?.addEventListener('submit', async e => {
-    e.preventDefault(); const fd = Object.fromEntries(new FormData(e.target));
+    e.preventDefault(); const fd = Object.fromEntries(new FormData(e.target)); fd.in_matchmaking = !!fd.in_matchmaking;
     try { await api.updateMyProfile(id, fd); toast('Profil uložen'); } catch (er) { toast('Chyba: ' + er.message, 5000); }
   });
+}
+
+// ---------- MATCHMAKING A KONTAKTY ----------
+const appUrl = () => location.origin + location.pathname;
+const isIOS = () => /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+export function vcard(c, ev) {
+  const e = s => String(s ?? '').replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/([,;])/g, '\\$1');
+  const parts = String(c.full_name || '').trim().split(/\s+/).filter(Boolean);
+  const first = parts.shift() || ''; const last = parts.join(' ');
+  const web = c.web ? (/^https?:/i.test(c.web) ? c.web : 'https://' + c.web) : '';
+  const note = ev ? `Potkali jsme se na ${ev.name || ev.event_name || 'TECH4DEFENCE'}${(ev.date || ev.event_date) ? ', ' + new Date((ev.date || ev.event_date) + 'T12:00').toLocaleDateString('cs-CZ') : ''}` : '';
+  return ['BEGIN:VCARD', 'VERSION:3.0', `N:${e(last)};${e(first)};;;`, `FN:${e(c.full_name || c.company)}`,
+    c.company && `ORG:${e(c.company)}`, c.position && `TITLE:${e(c.position)}`,
+    c.phone && `TEL;TYPE=CELL:${String(c.phone).replace(/[^\d+]/g, '')}`, c.email && `EMAIL;TYPE=WORK:${c.email}`,
+    web && `URL:${web}`, note && `NOTE:${e(note)}`, 'END:VCARD'].filter(Boolean).join('\r\n');
+}
+function saveVcf(text, name) {
+  const file = (name || 'kontakt').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w.-]+/g, '-').slice(0, 60) + '.vcf';
+  if (isIOS()) { location.href = 'data:text/vcard;charset=utf-8,' + encodeURIComponent(text); return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'text/vcard;charset=utf-8' }));
+  a.download = file; document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+
+async function loadQR() {
+  if (window.qrcode) return window.qrcode;
+  await new Promise((ok, ko) => { const sc = document.createElement('script'); sc.src = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js'; sc.onload = ok; sc.onerror = ko; document.head.append(sc); });
+  return window.qrcode;
+}
+
+function contactCard(c, ev, extra = '') {
+  return `<div class="card contact"><h3>${esc(c.full_name || c.company)}</h3>
+    <div class="muted">${esc([c.position, c.company].filter(Boolean).join(' · '))}</div>
+    <div class="cinfo">${c.phone ? `<a href="tel:${esc(String(c.phone).replace(/\s/g, ''))}">${esc(c.phone)}</a>` : ''}${c.email ? `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : ''}${c.web ? `<a target="_blank" rel="noopener" href="${esc(/^https?:/i.test(c.web) ? c.web : 'https://' + c.web)}">${esc(c.web)}</a>` : ''}</div>
+    <div class="row"><button data-vcf='${esc(JSON.stringify({ c, ev }))}'>Uložit do telefonu</button>${extra}</div></div>`;
+}
+function bindVcf() {
+  app.querySelectorAll('[data-vcf]').forEach(b => b.onclick = () => { const { c, ev } = JSON.parse(b.dataset.vcf); saveVcf(vcard(c, ev), c.full_name || c.company); });
+}
+
+function reasonsChips(r) { return String(r || '').split(';').map(x => x.trim().replace(/\.$/, '')).filter(Boolean); }
+
+async function mmView(b, me, id) {
+  const [list, contacts] = await Promise.all([api.mmList(id), api.mmContacts(id)]);
+  const st = { q: '', sector: '', reason: '' };
+  const incoming = contacts.filter(c => c.direction === 'in' && c.status === 'pending');
+  const byId = Object.fromEntries(contacts.map(c => [c.id, c]));
+  const sectors = [...new Set(list.map(p => p.sector).filter(Boolean))].sort((a, c) => a.localeCompare(c, 'cs'));
+  const reasons = [...new Set(list.flatMap(p => reasonsChips(p.reasons)))];
+  const ev = { name: b.event.name, date: b.event.date };
+  const draw = () => {
+    const q = st.q.toLowerCase();
+    const shown = list.filter(p => (!q || [p.company, p.full_name, p.description, p.sector].join(' ').toLowerCase().includes(q))
+      && (!st.sector || p.sector === st.sector) && (!st.reason || reasonsChips(p.reasons).includes(st.reason)));
+    const grp = n => b.groups.find(x => x.group_no === n);
+    const action = p => {
+      if (p.conn_status === 'connected') { const c = byId[p.id]; return c?.email || c?.phone ? `<button data-vcf='${esc(JSON.stringify({ c, ev }))}'>Uložit do telefonu</button><span class="ok">✓ Kontakt vyměněn</span>` : '<span class="ok">✓ Kontakt vyměněn</span>'; }
+      if (p.conn_status === 'sent') return '<span class="muted">Žádost odeslána, čeká na odpověď</span>';
+      if (p.conn_status === 'received') return `<button data-acc="${p.conn_id}">Přijmout žádost</button>`;
+      if (p.conn_status === 'declined') return '<span class="muted">Bez propojení</span>';
+      return `<button class="ghost" data-req="${p.id}">Chci se spojit</button>`;
+    };
+    document.getElementById('mmbody').innerHTML = `
+      ${incoming.length ? `<div class="card hl"><h3>Žádosti o${'\u00a0'}kontakt (${incoming.length})</h3>${incoming.map(c => `<div class="req"><div><b>${esc(c.full_name)}</b> · ${esc(c.company)}${c.message ? `<div class="muted">„${esc(c.message)}“</div>` : ''}</div>
+        <div class="row"><button class="small" data-acc="${c.conn_id}">Přijmout</button><button class="small ghost" data-dec="${c.conn_id}">Odmítnout</button></div></div>`).join('')}</div>` : ''}
+      <div class="card"><div class="filters">
+        <input id="mq" placeholder="Hledat firmu, obor, medailonek…" value="${esc(st.q)}">
+        <select id="ms"><option value="">Všechny sektory</option>${sectors.map(s => `<option ${s === st.sector ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select>
+      </div><div class="row" style="margin-top:10px">${reasons.map(r => `<button class="chipbtn ${r === st.reason ? 'on' : ''}" data-reason="${esc(r)}">${esc(r)}</button>`).join('')}</div>
+      <p class="muted" style="margin:10px 0 0">${shown.length} z${'\u00a0'}${list.length} firem. Kontakt (telefon, e-mail) uvidíte až po přijetí žádosti nebo výměně přes QR vizitku.</p></div>
+      <div class="grid g2">${shown.map(p => { const g = grp(p.group_no);
+        return `<div class="card firm"><h3>${esc(p.company)}</h3>
+          <div class="muted">${esc([p.full_name, p.position].filter(Boolean).join(' · '))}</div>
+          <div class="row" style="margin:8px 0">${g ? `<span class="chip"><i class="dot" style="background:${esc(g.color_hex)}"></i>Skupina ${g.group_no}</span>` : ''}${p.kind !== 'civil' ? `<span class="chip">${esc(KIND[p.kind])}</span>` : ''}${p.sector ? `<span class="chip">${esc(p.sector)}</span>` : ''}</div>
+          ${p.description ? `<p class="desc">${nb(p.description)}</p>` : ''}
+          ${reasonsChips(p.reasons).length ? `<div class="reasons">${reasonsChips(p.reasons).map(r => `<span>${esc(r)}</span>`).join('')}</div>` : ''}
+          <div class="row" style="margin-top:12px">${action(p)}</div></div>`; }).join('') || '<p class="muted">Nic nenalezeno.</p>'}</div>`;
+    const mq = document.getElementById('mq'); mq.oninput = () => { st.q = mq.value; draw(); const n = document.getElementById('mq'); n.focus(); n.setSelectionRange(n.value.length, n.value.length); };
+    document.getElementById('ms').onchange = e => { st.sector = e.target.value; draw(); };
+    app.querySelectorAll('[data-reason]').forEach(x => x.onclick = () => { st.reason = st.reason === x.dataset.reason ? '' : x.dataset.reason; draw(); });
+    app.querySelectorAll('[data-req]').forEach(x => x.onclick = async () => {
+      const msg = prompt('Krátká zpráva k žádosti (nepovinné), např. co hledáte nebo kdy se potkat:');
+      if (msg === null) return;
+      try { const r = await api.mmRequest(x.dataset.req, msg); toast(r === 'connected' ? 'Propojeno, kontakt najdete v záložce Kontakty' : 'Žádost odeslána'); viewEvent(id, 'matchmaking'); }
+      catch (er) { toast('Chyba: ' + er.message, 5000); }
+    });
+    app.querySelectorAll('[data-acc]').forEach(x => x.onclick = async () => { await api.mmRespond(x.dataset.acc, true); toast('Propojeno'); viewEvent(id, 'matchmaking'); });
+    app.querySelectorAll('[data-dec]').forEach(x => x.onclick = async () => { await api.mmRespond(x.dataset.dec, false); viewEvent(id, 'matchmaking'); });
+    bindVcf();
+  };
+  return { html: '<div id="mmbody"></div>', after: draw };
+}
+
+async function contactsView(b, me, id) {
+  const contacts = await api.mmContacts(id);
+  const ev = { name: b.event.name, date: b.event.date };
+  const ok = contacts.filter(c => c.status === 'accepted');
+  const incoming = contacts.filter(c => c.direction === 'in' && c.status === 'pending');
+  const sent = contacts.filter(c => c.direction === 'out' && c.status === 'pending');
+  const link = appUrl() + '#/k/' + me.card_token;
+  const html = `<div class="grid g2">
+    <div class="card vizitka"><h2>Moje vizitka</h2><div id="qr" class="qr"></div>
+      <p class="muted">Ukažte kód. Druhý účastník ho naskenuje fotoaparátem telefonu a${'\u00a0'}vyměníte si kontakty (on dostane váš, vy jeho).</p>
+      <div class="row"><button class="ghost small" id="cpl">Kopírovat odkaz</button><a class="btn ghost small" href="#/e/${id}/profil">Upravit, co sdílím</a></div></div>
+    <div class="card"><h2>Kontakty z${'\u00a0'}akce <span class="muted">(${ok.length})</span></h2>
+      ${ok.length ? `<p class="muted">Uložte si je jedním klepnutím do telefonu.</p>${ok.length > 1 ? '<button id="allvcf" class="ghost">Stáhnout všechny (.vcf)</button>' : ''}` : '<p class="muted">Zatím žádné. Naskenujte vizitku jiného účastníka nebo pošlete žádost v${"\u00a0"}Matchmakingu.</p>'}
+      ${incoming.length ? `<h3 style="margin-top:18px">Čekají na vás (${incoming.length})</h3>${incoming.map(c => `<div class="req"><div><b>${esc(c.full_name)}</b> · ${esc(c.company)}${c.message ? `<div class="muted">„${esc(c.message)}“</div>` : ''}</div><div class="row"><button class="small" data-acc="${c.conn_id}">Přijmout</button><button class="small ghost" data-dec="${c.conn_id}">Odmítnout</button></div></div>`).join('')}` : ''}
+      ${sent.length ? `<h3 style="margin-top:18px">Odeslané žádosti</h3>${sent.map(c => `<div class="muted">${esc(c.company)} (${esc(c.full_name)})</div>`).join('')}` : ''}
+    </div></div>
+    <div class="grid g2">${ok.map(c => contactCard(c, ev, c.source === 'qr' ? '<span class="muted">přes QR</span>' : '')).join('')}</div>`;
+  const after = async () => {
+    try { const qrcode = await loadQR(); const qr = qrcode(0, 'M'); qr.addData(link); qr.make(); document.getElementById('qr').innerHTML = qr.createSvgTag({ cellSize: 6, margin: 2, scalable: true }); }
+    catch { document.getElementById('qr').innerHTML = `<p class="muted">QR kód se nenačetl. Odkaz: ${esc(link)}</p>`; }
+    document.getElementById('cpl').onclick = async () => { try { await navigator.clipboard.writeText(link); toast('Odkaz zkopírován'); } catch { prompt('Zkopírujte odkaz:', link); } };
+    const all = document.getElementById('allvcf'); if (all) all.onclick = () => saveVcf(ok.map(c => vcard(c, ev)).join('\r\n'), 'kontakty-' + b.event.slug);
+    app.querySelectorAll('[data-acc]').forEach(x => x.onclick = async () => { await api.mmRespond(x.dataset.acc, true); toast('Propojeno'); viewEvent(id, 'kontakty'); });
+    app.querySelectorAll('[data-dec]').forEach(x => x.onclick = async () => { await api.mmRespond(x.dataset.dec, false); viewEvent(id, 'kontakty'); });
+    bindVcf();
+  };
+  return { html, after };
+}
+
+const PENDING = 't4d_pending_card';
+const store = { get: k => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} } };
+
+async function viewScan(token) {
+  loader('Hubík nese vizitku…');
+  try {
+    const c = await api.mmScan(token);
+    if (c.self) { page(`<main><div class="wrap"><div class="card"><h2>To je vaše vizitka</h2><p>Ukažte ji ostatním, ať si ji naskenují.</p><a class="btn" href="#/e/${c.event_id}/kontakty">Zpět na moje kontakty</a></div></div></main>`); return; }
+    page(`<main><div class="wrap" style="max-width:560px">
+      <div class="notice" style="margin-bottom:16px">Kontakty jste si vyměnili. ${esc(c.full_name || '')} uvidí váš kontakt ve své appce.</div>
+      ${contactCard(c, { name: c.event_name, date: c.event_date })}
+      <a class="btn ghost" href="#/e/${c.event_id}/kontakty">Moje kontakty</a></div></main>`);
+    bindVcf();
+  } catch (er) {
+    const m = /not_participant/.test(er.message) ? 'Tahle vizitka patří k akci, na které nejste registrovaní pod tímto e-mailem.' : /not_found/.test(er.message) ? 'Vizitka neexistuje nebo už neplatí.' : er.message;
+    page(`<main><div class="wrap"><div class="notice err">${esc(m)}</div><p><a href="#/">Zpět</a></p></div></main>`);
+  }
 }
 
 // ---------- ADMIN ----------
@@ -208,7 +348,7 @@ function adminInfo(b, wrap) {
     <label><span>Pořadatelé</span><textarea name="organizers" rows="2">${esc(ev.organizers)}</textarea></label>
     <label><span>Popis pro účastníky</span><textarea name="description" rows="3">${esc(ev.description)}</textarea></label>
     <label class="check"><input type="checkbox" name="is_published" ${ev.is_published ? 'checked' : ''}> Akce je zveřejněná (účastníci ji po přihlášení vidí)</label>
-    <label class="check"><input type="checkbox" name="directory_enabled" ${ev.directory_enabled ? 'checked' : ''}> Účastníci vidí medailonky ostatních potvrzených firem</label>
+    <label class="check"><input type="checkbox" name="directory_enabled" ${ev.directory_enabled ? 'checked' : ''}> Matchmaking: účastníci vidí medailonky ostatních potvrzených firem a${'\u00a0'}můžou si posílat žádosti o${'\u00a0'}kontakt</label>
     <div class="row"><button type="submit">Uložit</button><button type="button" class="danger" id="delev">Smazat akci</button></div></form>`);
   $('#ef').addEventListener('submit', async e => {
     e.preventDefault(); const fd = new FormData(e.target); const o = { id: ev.id };
@@ -377,7 +517,7 @@ function adminParticipants(b, ps, wrap) {
     const list = ps.filter(p => !q || [p.company, p.full_name, p.email, p.sector].join(' ').toLowerCase().includes(q));
     wrap(`<div class="grid g3">
       <div class="card"><div class="stat">${ps.length}</div><div class="muted">celkem · ${cnt('confirmed')} potvrzených · ${cnt('registered')} čeká</div></div>
-      <div class="card"><div class="stat">${ps.filter(p => p.checked_in_at).length}</div><div class="muted">prošlo prezencí</div></div>
+      <div class="card"><div class="stat">${ps.filter(p => p.checked_in_at).length}</div><div class="muted">prošlo prezencí · <span id="conncount">…</span> vyměněných kontaktů</div></div>
       <div class="card"><div class="row">${b.groups.map(g => `<span class="chip"><i class="dot" style="background:${esc(g.color_hex)}"></i>${g.group_no}: ${grpCount(g.group_no)}</span>`).join('') || '<span class="muted">Skupiny nejsou nastavené (záložka Točení)</span>'}</div></div>
     </div>
     <div class="card"><h3>Import registrací</h3><p class="muted">Nahrajte export z${' '}MS Forms (Formulář zájmu o${' '}akci …xlsx) nebo CSV. Existující účastníky (podle e-mailu) jen aktualizuje, stav ani skupinu nepřepíše.</p>
@@ -394,6 +534,7 @@ function adminParticipants(b, ps, wrap) {
         <td><select data-p="${p.id}" data-k="group_no"><option value="">bez skupiny</option>${b.groups.map(g => `<option value="${g.group_no}" ${p.group_no === g.group_no ? 'selected' : ''}>${g.group_no} ${esc(g.color_name)}</option>`).join('')}</select></td>
         <td><input type="checkbox" style="width:auto" data-ci="${p.id}" ${p.checked_in_at ? 'checked' : ''}></td>
         <td><button class="small danger" data-del="${p.id}">×</button></td></tr>`).join('')}</table></div></div>`);
+    api.connectionCount(id).then(n => { const el = $('#conncount'); if (el) el.textContent = n; }).catch(() => {});
     const qi = $('#q'); qi.oninput = () => { filter = qi.value; draw(); const n = $('#q'); n.focus(); n.setSelectionRange(n.value.length, n.value.length); };
     app.querySelectorAll('select[data-p]').forEach(sel => sel.onchange = async () => {
       const p = ps.find(x => x.id === sel.dataset.p); const k = sel.dataset.k; const v = k === 'group_no' ? (sel.value ? +sel.value : null) : sel.value;
@@ -469,7 +610,10 @@ function adminTags(b, ps, wrap) {
 async function route() {
   try {
     state.session = await api.session();
-    if (!state.session) return viewLogin();
+    const scan = location.hash.match(/^#\/k\/([\w-]+)/);
+    if (!state.session) { if (scan) store.set(PENDING, scan[1]); return viewLogin(!!(scan || store.get(PENDING))); }
+    if (scan) { store.set(PENDING, null); return viewScan(scan[1]); }
+    const pend = store.get(PENDING); if (pend) { store.set(PENDING, null); location.replace('#/k/' + pend); return; }
     state.admin = await api.isAdmin();
     const parts = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
     if (parts[0] === 'admin') {

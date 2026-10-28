@@ -5,7 +5,8 @@ Webová aplikace Defence Hubu pro akce TECH4DEFENCE. Každý účastník se při
 - **Moje točení**: svou barevnou skupinu (stejná barva jako na jmenovce) a pro každé kolo místnost, stůl zbrojařů a skupiny, se kterými tam sedí. Pod tím celý rozpis.
 - **Program** a info o akci (místo, mapa, pořadatelé, kontakt).
 - **Profil**: může si upravit jméno, pozici, kontakty, medailonek a důvod účasti. Firmu, e-mail, stav ani skupinu měnit nemůže.
-- **Firmy na akci** (volitelné, zapíná admin): medailonky ostatních potvrzených firem.
+- **Matchmaking** (zapíná admin u akce): seznam potvrzených firem s medailonkem, sektorem a tím, co nabízí nebo hledá (z formuláře). Filtr podle sektoru a důvodu účasti. Tlačítko „Chci se spojit“ pošle žádost (s krátkou zprávou), druhá strana ji přijme nebo odmítne. Telefon a e-mail se ukážou **až po přijetí**.
+- **Kontakty**: vlastní **QR vizitka**. Druhý účastník ji naskenuje fotoaparátem telefonu a kontakty se vymění oboustranně. Každý kontakt jde jedním klepnutím **uložit do telefonu** (.vcf, na iPhonu se rovnou otevře karta kontaktu), případně stáhnout všechny najednou. V poznámce kontaktu je, na které akci jste se potkali.
 
 Admin (tým DH a organizátoři) má navíc **Administraci**:
 
@@ -21,7 +22,8 @@ Při načítání jede Hubík na koni (`assets/hubik-kun.mp4`, výřez z Canva p
 
 - **Frontend**: statický web (HTML + JS, bez buildu) na GitHub Pages.
 - **Backend**: [Supabase](https://supabase.com) (Postgres + přihlašování magic linkem). Data chrání pravidla Row Level Security přímo v databázi: účastník vidí jen sebe a rozpis svých akcí, cizí e-mail nevidí nic, zapisovat do účastníků smí jen admin.
-- Bez vyplněného `config.js` běží appka v **DEMO režimu** (vymyšlená data, nic se neukládá). Přihlášení: `ucastnik@demo.cz` nebo `admin@demo.cz`.
+- Ostrý projekt: Supabase `tech4defence` (organizace Nadine hub, region EU West), adresa a publishable key jsou v `config.js`.
+- Adresa s `?demo` (nebo bez vyplněného `config.js`) pustí appku v **DEMO režimu** (vymyšlená data, nic se neukládá). Přihlášení: `ucastnik@demo.cz` nebo `admin@demo.cz`.
 
 Účastníci se do repozitáře **nikdy** neukládají (repo je veřejné). Importují se jen v administraci a leží v Supabase. `.gitignore` blokuje `*.xlsx` a `*.csv`.
 

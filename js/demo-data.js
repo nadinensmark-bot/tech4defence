@@ -9,9 +9,15 @@ const participants = names.map((n, i) => ({
   full_name: i === 0 ? 'Jana Ukázková' : `Kontakt ${n}`, company: `Firma ${n} s.r.o. (demo)`, ico: '',
   position: 'Obchodní ředitel', phone: '', web: '', sector: sectors[i % sectors.length],
   description: 'Ukázkový medailonek firmy: zakázková výroba dílů a komponent.',
-  reasons: 'Chci se stát subdodavatelem dílů či komponent.', kind: 'civil',
+  reasons: ['Chci se stát subdodavatelem dílů či komponent.', 'Nabízím konstrukční, vývojové kapacity.', 'Jde mi zatím o orientační networking. Mapuji si možnosti.', 'Chci se stát dodavatelem technologií či zařízení.'][i % 4], kind: 'civil',
   status: i < 15 ? 'confirmed' : 'registered', group_no: i < 15 ? (i % 6) + 1 : null, checked_in_at: null,
+  phone: `+420 600 000 ${String(100 + i)}`, web: `firma-${i}.example.cz`, card_token: 'demo' + i, in_matchmaking: true,
 }));
+// ukázkové propojení: Firma Gama žádá o kontakt, s Firmou Delta už je kontakt vyměněný přes QR
+const connections = [
+  { id: 'c1', event_id: E, from_id: 'p2', to_id: 'p0', status: 'pending', source: 'request', message: 'Dobrý den, hledáme subdodavatele obrábění, rádi bychom se na akci potkali.', created_at: '2026-11-05T10:00:00Z' },
+  { id: 'c2', event_id: E, from_id: 'p0', to_id: 'p3', status: 'accepted', source: 'qr', message: null, created_at: '2026-11-05T11:00:00Z' },
+];
 
 export const DEMO_DATA = {
   admins: ['admin@demo.cz'],
@@ -40,4 +46,5 @@ export const DEMO_DATA = {
     [3, 1, 'ELDIS, STV Group, Kara UAS', [4, 2]], [3, 2, 'Explosia, ERA, STV Technology', [3, 5]], [3, 3, 'Nitrocellulose, Spolana', [1, 6]],
   ].map(([round_no, room_no, lead, group_nos]) => ({ event_id: E, round_no, room_no, lead, group_nos })),
   participants,
+  connections,
 };
