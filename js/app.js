@@ -21,6 +21,7 @@ let state = { session: null, admin: false };
 
 // ---------- LOADER (Hubík na koni) ----------
 function loader(text = 'Hubík sedlá koně…') {
+  if (app.querySelector('header.top')) { app.querySelector('main')?.classList.add('busy'); return; }
   app.innerHTML = `<div class="loader"><video src="assets/hubik-kun.mp4" poster="assets/hubik-kun.jpg" autoplay muted loop playsinline></video><p>${esc(text)}</p></div>`;
 }
 
@@ -32,7 +33,7 @@ function header() {
     <a class="logos" href="#/"><img src="assets/logo-cobrand-white.png" alt="Defence Hub CzechInvest"><img class="diana" src="assets/part-of-diana-white.png" alt="part of NATO DIANA"></a>
     <span class="spacer"></span>
     ${email ? `<span class="who">${esc(email)}</span>
-      ${state.admin ? `<a class="btn small" style="background:transparent;color:#fff;border-color:rgba(255,255,255,.35)" href="${location.hash.startsWith('#/admin') ? '#/' : '#/admin'}">${location.hash.startsWith('#/admin') ? 'Pohled účastníka' : 'Administrace'}</a>` : ''}
+      ${state.admin ? `<a class="btn small" style="background:transparent;color:#fff;border-color:rgba(255,255,255,.35)" href="${location.hash.startsWith('#/admin') ? '#/' : '#/admin'}">${location.hash.startsWith('#/admin') ? '<span class="long">Pohled účastníka</span><span class="short">Účastník</span>' : '<span class="long">Administrace</span><span class="short">Admin</span>'}</a>` : ''}
       <button class="small" id="logout">Odhlásit</button>` : ''}
   </div></header>`;
 }
@@ -74,8 +75,8 @@ async function viewHome() {
   </div></main>`);
 }
 
-function hero(ev) {
-  return `<section class="hero"><div class="wrap">
+function hero(ev, compact = false) {
+  return `<section class="hero ${compact ? 'compact' : ''}"><div class="wrap">
     <h1>${nb(ev.name)}</h1>${ev.subtitle ? `<p class="sub">${nb(ev.subtitle)}</p>` : ''}
     <div class="meta"><span>${esc(dateCz(ev.date))}</span><span>${esc(span(ev.time_from, ev.time_to))}</span><span>${nb(ev.venue || '')}</span></div>
   </div></section>`;
@@ -117,7 +118,11 @@ function matrix(b, hlGroup) {
       const hl = hlGroup && s?.group_nos?.includes(hlGroup);
       return `<td class="${hl ? 'hl' : ''}">${s ? `<div><b>${esc(s.lead || '')}</b></div>${(s.group_nos || []).map(n => `<span class="chip"><i class="dot" style="background:${esc(grp(n)?.color_hex)}"></i>${n}</span>`).join('')}` : ''}</td>`;
     }).join('')}</tr>`).join('')}
-  </table></div></div>`;
+  </table></div>
+  <div class="matrix-m">${b.rounds.map(r => `<div class="mround"><h3>${r.round_no}. kolo <span class="muted">${esc(span(r.starts, r.ends))}</span></h3>
+    ${b.rooms.map(rm => { const s = b.slots.find(x => x.round_no === r.round_no && x.room_no === rm.room_no); if (!s) return '';
+      const hl = hlGroup && s.group_nos?.includes(hlGroup);
+      return `<div class="mslot ${hl ? 'hl' : ''}"><div><b>${esc(rm.name)}</b><div class="muted">${esc(s.lead || '')}</div></div><div class="mchips">${(s.group_nos || []).map(n => `<span class="chip"><i class="dot" style="background:${esc(grp(n)?.color_hex)}"></i>${n}</span>`).join('')}</div></div>`; }).join('')}</div>`).join('')}</div></div>`;
 }
 
 function programHtml(b) {
@@ -143,24 +148,35 @@ function profileHtml(me) {
     <button type="submit">Uložit profil</button></form>`;
 }
 
+const ICON = {
+  toceni: '<path d="M20 11a8 8 0 0 0-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9L20 16M20 20v-4h-4"/>',
+  matchmaking: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.3-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.8"/><path d="M16.5 14.6c2.6.2 4.4 1.9 5 5.4"/>',
+  kontakty: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/>',
+  program: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  profil: '<circle cx="12" cy="8" r="4"/><path d="M4 21c.8-4 4-6 8-6s7.2 2 8 6"/>',
+};
+const svg = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k] || ''}</svg>`;
+
 async function viewEvent(id, tab = 'toceni') {
   loader();
   const regs = await api.myRegistrations();
   const me = regs.find(r => r.event_id === id);
   if (!me) { location.hash = '#/'; return; }
   const b = await api.eventBundle(id);
-  const tabs = [['toceni', 'Moje točení']];
-  if (b.event.directory_enabled) tabs.push(['matchmaking', 'Matchmaking']);
-  tabs.push(['kontakty', 'Kontakty'], ['program', 'Program'], ['profil', 'Profil']);
+  const tabs = [['toceni', 'Moje točení', 'Točení']];
+  if (b.event.directory_enabled) tabs.push(['matchmaking', 'Matchmaking', 'Firmy']);
+  tabs.push(['kontakty', 'Kontakty', 'Kontakty'], ['program', 'Program', 'Program'], ['profil', 'Profil', 'Profil']);
+  if (!tabs.some(t => t[0] === tab)) tab = 'toceni';
   let body = '', after = null;
   if (tab === 'program') body = programHtml(b);
   else if (tab === 'profil') body = profileHtml(me);
   else if (tab === 'matchmaking' && b.event.directory_enabled) ({ html: body, after } = await mmView(b, me, id));
   else if (tab === 'kontakty') ({ html: body, after } = await contactsView(b, me, id));
   else body = myRotation(b, me);
-  page(hero(b.event) + `<main><div class="wrap">
+  page(hero(b.event, tab !== 'toceni' && tab !== 'program') + `<main class="evmain"><div class="wrap">
     ${me.status === 'registered' ? `<div class="notice warn" style="margin-bottom:16px">Vaše registrace čeká na potvrzení organizátorů. O${' '}potvrzení vás budeme informovat e-mailem.</div>` : ''}
-    <nav class="tabs">${tabs.map(([k, l]) => `<a href="#/e/${id}/${k}" class="${k === tab ? 'on' : ''}">${l}</a>`).join('')}</nav>${body}</div></main>`);
+    <nav class="tabs evtabs">${tabs.map(([k, l, sh]) => `<a href="#/e/${id}/${k}" class="${k === tab ? 'on' : ''}" ${k === tab ? 'aria-current="page"' : ''}>${svg(k)}<span class="long">${l}</span><span class="short">${sh}</span></a>`).join('')}</nav>${body}</div></main>`);
+  window.scrollTo(0, 0);
   if (after) await after();
   $('#pf')?.addEventListener('submit', async e => {
     e.preventDefault(); const fd = Object.fromEntries(new FormData(e.target)); fd.in_matchmaking = !!fd.in_matchmaking;
@@ -526,14 +542,14 @@ function adminParticipants(b, ps, wrap) {
       <input id="q" placeholder="Hledat firmu, jméno, e-mail…" value="${esc(filter)}" style="max-width:320px">
       <div class="row"><button class="ghost small" id="auto">Rozdělit do skupin (jen bez skupiny)</button><button class="ghost small" id="autoall">Přerozdělit všechny</button>
       ${cnt('registered') ? `<button class="ghost small" id="confall">Potvrdit všech ${cnt('registered')} čekajících</button>` : ''}<button class="ghost small" id="csv">Export CSV</button><button class="ghost small" id="addp">+ Přidat ručně</button></div></div>
-      <div class="tablewrap"><table><tr><th>Firma</th><th>Účastník</th><th>Sektor</th><th>Typ</th><th>Stav</th><th>Skupina</th><th>Prezence</th><th></th></tr>
+      <div class="tablewrap"><table class="ptable"><tr><th>Firma</th><th>Účastník</th><th>Sektor</th><th>Typ</th><th>Stav</th><th>Skupina</th><th>Prezence</th><th></th></tr>
       ${list.map(p => `<tr><td><b>${esc(p.company)}</b><div class="muted">${esc(p.ico || '')}</div></td>
-        <td>${esc(p.full_name)}<div class="muted">${esc(p.email)}</div></td><td>${esc(p.sector || '')}</td>
-        <td><select data-p="${p.id}" data-k="kind">${Object.entries(KIND).map(([k, l]) => `<option value="${k}" ${p.kind === k ? 'selected' : ''}>${l}</option>`).join('')}</select></td>
-        <td><select data-p="${p.id}" data-k="status">${Object.entries(STATUS).map(([k, l]) => `<option value="${k}" ${p.status === k ? 'selected' : ''}>${l}</option>`).join('')}</select></td>
-        <td><select data-p="${p.id}" data-k="group_no"><option value="">bez skupiny</option>${b.groups.map(g => `<option value="${g.group_no}" ${p.group_no === g.group_no ? 'selected' : ''}>${g.group_no} ${esc(g.color_name)}</option>`).join('')}</select></td>
-        <td><input type="checkbox" style="width:auto" data-ci="${p.id}" ${p.checked_in_at ? 'checked' : ''}></td>
-        <td><button class="small danger" data-del="${p.id}">×</button></td></tr>`).join('')}</table></div></div>`);
+        <td>${esc(p.full_name)}<div class="muted">${esc(p.email)}</div></td><td class="hide-m">${esc(p.sector || '')}</td>
+        <td data-l="Typ"><select data-p="${p.id}" data-k="kind">${Object.entries(KIND).map(([k, l]) => `<option value="${k}" ${p.kind === k ? 'selected' : ''}>${l}</option>`).join('')}</select></td>
+        <td data-l="Stav"><select data-p="${p.id}" data-k="status">${Object.entries(STATUS).map(([k, l]) => `<option value="${k}" ${p.status === k ? 'selected' : ''}>${l}</option>`).join('')}</select></td>
+        <td data-l="Skupina"><select data-p="${p.id}" data-k="group_no"><option value="">bez skupiny</option>${b.groups.map(g => `<option value="${g.group_no}" ${p.group_no === g.group_no ? 'selected' : ''}>${g.group_no} ${esc(g.color_name)}</option>`).join('')}</select></td>
+        <td data-l="Prezence"><label class="ci"><input type="checkbox" data-ci="${p.id}" ${p.checked_in_at ? 'checked' : ''}><span>${p.checked_in_at ? 'Dorazil' : 'Nedorazil'}</span></label></td>
+        <td class="del"><button class="small danger" data-del="${p.id}" aria-label="Smazat">×</button></td></tr>`).join('')}</table></div></div>`);
     api.connectionCount(id).then(n => { const el = $('#conncount'); if (el) el.textContent = n; }).catch(() => {});
     const qi = $('#q'); qi.oninput = () => { filter = qi.value; draw(); const n = $('#q'); n.focus(); n.setSelectionRange(n.value.length, n.value.length); };
     app.querySelectorAll('select[data-p]').forEach(sel => sel.onchange = async () => {
