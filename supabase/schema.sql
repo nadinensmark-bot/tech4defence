@@ -263,3 +263,174 @@ grant execute on function public.admin_save_rotation(uuid, jsonb) to authenticat
 grant execute on function public.update_my_profile(uuid, jsonb) to authenticated;
 grant execute on function public.event_directory(uuid) to authenticated;
 grant execute on function public.can_login(text) to anon, authenticated;
+
+-- ============ MATCHMAKING A VÝMĚNA KONTAKTŮ ============
+-- Kontakty (e-mail, telefon) se druhé straně ukážou až po přijaté žádosti nebo po naskenování QR vizitky.
+
+alter table public.participants add column if not exists card_token text unique default replace(gen_random_uuid()::text, '-', '');
+alter table public.participants add column if not exists in_matchmaking boolean not null default true;
+update public.participants set card_token = replace(gen_random_uuid()::text, '-', '') where card_token is null;
+
+create table if not exists public.connections (
+  id uuid primary key default gen_random_uuid(),
+  event_id uuid not null references public.events(id) on delete cascade,
+  from_id uuid not null references public.participants(id) on delete cascade,
+  to_id uuid not null references public.participants(id) on delete cascade,
+  status text not null default 'pending' check (status in ('pending','accepted','declined')),
+  source text not null default 'request' check (source in ('request','qr')),
+  message text,
+  created_at timestamptz not null default now(),
+  responded_at timestamptz,
+  unique (from_id, to_id),
+  check (from_id <> to_id)
+);
+alter table public.connections enable row level security;
+drop policy if exists connections_admin on public.connections;
+create policy connections_admin on public.connections for select to authenticated using (public.is_admin());
+grant select on public.connections to authenticated;
+
+-- moje ID účastníka na akci
+create or replace function public.my_pid(p_event uuid) returns uuid
+language sql stable security definer set search_path = public as $$
+  select id from public.participants
+  where event_id = p_event and email = public.jwt_email() and status in ('registered','confirmed')
+$$;
+
+create or replace function public.mm_enabled(p_event uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select coalesce((select directory_enabled from public.events where id = p_event), false)
+$$;
+
+-- seznam firem pro matchmaking (bez kontaktů) + stav propojení se mnou
+create or replace function public.mm_list(p_event uuid)
+returns table (id uuid, company text, full_name text, "position" text, sector text, description text, reasons text,
+               web text, group_no int, kind text, conn_id uuid, conn_status text)
+language plpgsql stable security definer set search_path = public as $$
+#variable_conflict use_column
+declare me uuid := public.my_pid(p_event);
+begin
+  if me is null or not public.mm_enabled(p_event) then return; end if;
+  return query
+  select p.id, p.company, p.full_name, p.position, p.sector, p.description, p.reasons, p.web, p.group_no, p.kind,
+         c.id,
+         case when c.id is null then 'none'
+              when c.status = 'accepted' then 'connected'
+              when c.status = 'declined' then 'declined'
+              when c.from_id = me then 'sent' else 'received' end
+  from public.participants p
+  left join lateral (
+    select * from public.connections x
+    where (x.from_id = me and x.to_id = p.id) or (x.from_id = p.id and x.to_id = me)
+    order by (x.status = 'accepted') desc, x.created_at desc limit 1
+  ) c on true
+  where p.event_id = p_event and p.id <> me and p.status = 'confirmed' and p.in_matchmaking
+  order by p.company;
+end $$;
+
+-- žádost o kontakt / schůzku; když už mi ten druhý žádost poslal, rovnou se propojíme
+create or replace function public.mm_request(p_to uuid, p_message text default null) returns text
+language plpgsql security definer set search_path = public as $$
+declare ev uuid; me uuid; rev public.connections;
+begin
+  select event_id into ev from public.participants where id = p_to and status = 'confirmed' and in_matchmaking;
+  if ev is null then raise exception 'not_found'; end if;
+  me := public.my_pid(ev);
+  if me is null or not public.mm_enabled(ev) then raise exception 'forbidden'; end if;
+  if me = p_to then raise exception 'self'; end if;
+  select * into rev from public.connections where from_id = p_to and to_id = me;
+  if rev.id is not null and rev.status <> 'declined' then
+    update public.connections set status = 'accepted', responded_at = now() where id = rev.id;
+    return 'connected';
+  end if;
+  insert into public.connections(event_id, from_id, to_id, message)
+  values (ev, me, p_to, nullif(left(trim(coalesce(p_message,'')), 500), ''))
+  on conflict (from_id, to_id) do nothing;
+  return 'sent';
+end $$;
+
+create or replace function public.mm_respond(p_conn uuid, p_accept boolean) returns void
+language plpgsql security definer set search_path = public as $$
+declare c public.connections;
+begin
+  select * into c from public.connections where id = p_conn;
+  if c.id is null or c.to_id <> public.my_pid(c.event_id) then raise exception 'forbidden'; end if;
+  update public.connections set status = case when p_accept then 'accepted' else 'declined' end, responded_at = now()
+  where id = p_conn;
+end $$;
+
+-- moje kontakty a žádosti; e-mail a telefon jen u propojených
+create or replace function public.mm_contacts(p_event uuid)
+returns table (conn_id uuid, direction text, status text, source text, message text, created_at timestamptz,
+               id uuid, company text, full_name text, "position" text, sector text, web text, group_no int,
+               email text, phone text)
+language plpgsql stable security definer set search_path = public as $$
+#variable_conflict use_column
+declare me uuid := public.my_pid(p_event);
+begin
+  if me is null then return; end if;
+  return query
+  select c.id, case when c.from_id = me then 'out' else 'in' end, c.status, c.source, c.message, c.created_at,
+         p.id, p.company, p.full_name, p.position, p.sector, p.web, p.group_no,
+         case when c.status = 'accepted' then p.email end,
+         case when c.status = 'accepted' then p.phone end
+  from public.connections c
+  join public.participants p on p.id = case when c.from_id = me then c.to_id else c.from_id end
+  where c.event_id = p_event and (c.from_id = me or c.to_id = me)
+  order by c.created_at desc;
+end $$;
+
+-- naskenování QR vizitky: vzájemná výměna kontaktů, vrací kontakt majitele vizitky
+create or replace function public.mm_scan(p_token text) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare o public.participants; me uuid; ex uuid; ev public.events;
+begin
+  select * into o from public.participants where card_token = p_token and status in ('registered','confirmed');
+  if o.id is null then raise exception 'not_found'; end if;
+  me := public.my_pid(o.event_id);
+  if me is null then raise exception 'not_participant'; end if;
+  select * into ev from public.events where id = o.event_id;
+  if me <> o.id then
+    select id into ex from public.connections where (from_id = me and to_id = o.id) or (from_id = o.id and to_id = me) limit 1;
+    if ex is null then
+      insert into public.connections(event_id, from_id, to_id, status, source, responded_at)
+      values (o.event_id, me, o.id, 'accepted', 'qr', now());
+    else
+      update public.connections set status = 'accepted', responded_at = now() where id = ex;
+    end if;
+  end if;
+  return jsonb_build_object('self', me = o.id, 'event_id', o.event_id, 'event_name', ev.name, 'event_date', ev.date,
+    'company', o.company, 'full_name', o.full_name, 'position', o.position, 'email', o.email, 'phone', o.phone, 'web', o.web);
+end $$;
+
+-- profil: přidat volbu viditelnosti v matchmakingu
+create or replace function public.update_my_profile(p_event uuid, p jsonb) returns public.participants
+language plpgsql security definer set search_path = public as $$
+declare r public.participants;
+begin
+  update public.participants set
+    full_name   = coalesce(p->>'full_name', full_name),
+    position    = coalesce(p->>'position', position),
+    phone       = coalesce(p->>'phone', phone),
+    web         = coalesce(p->>'web', web),
+    description = coalesce(p->>'description', description),
+    sector      = coalesce(p->>'sector', sector),
+    reasons     = coalesce(p->>'reasons', reasons),
+    in_matchmaking = coalesce((p->>'in_matchmaking')::boolean, in_matchmaking)
+  where event_id = p_event and email = public.jwt_email()
+  returning * into r;
+  if r.id is null then raise exception 'not_a_participant'; end if;
+  return r;
+end $$;
+
+revoke all on function public.mm_list(uuid) from public, anon;
+revoke all on function public.mm_request(uuid, text) from public, anon;
+revoke all on function public.mm_respond(uuid, boolean) from public, anon;
+revoke all on function public.mm_contacts(uuid) from public, anon;
+revoke all on function public.mm_scan(text) from public, anon;
+revoke all on function public.my_pid(uuid) from public, anon;
+grant execute on function public.mm_list(uuid) to authenticated;
+grant execute on function public.mm_request(uuid, text) to authenticated;
+grant execute on function public.mm_respond(uuid, boolean) to authenticated;
+grant execute on function public.mm_contacts(uuid) to authenticated;
+grant execute on function public.mm_scan(text) to authenticated;
+grant execute on function public.my_pid(uuid) to authenticated;
