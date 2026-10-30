@@ -28,6 +28,7 @@ export const DEMO_DATA = {
     organizers: 'CzechInvest, Univerzita Pardubice a Pardubický podnikatelský inkubátor P-PINK pod patronátem Asociace obranného a bezpečnostního průmyslu ČR',
     description: 'Akce je určena zejména výrobcům elektroniky, strojírenským, kovovýrobním, nástrojářským a plastikářským firmám a vývojářům softwaru. Každá firma může vyslat pouze jednu osobu.',
     contact_email: '', is_published: true, directory_enabled: true,
+    directions: {"from_label": "Hlavní nádraží", "from": [50.03257, 15.75673], "to_label": "FEI UPCE", "to": [50.03326, 15.7675], "path": [[50.03256, 15.75673], [50.03256, 15.75699], [50.03265, 15.7572], [50.03365, 15.76069], [50.03421, 15.76267], [50.03417, 15.7627], [50.03407, 15.76325], [50.03405, 15.76332], [50.03403, 15.76675], [50.03397, 15.76691], [50.03396, 15.76739], [50.03386, 15.76753], [50.03377, 15.76752], [50.03372, 15.76758], [50.03369, 15.76752], [50.03352, 15.76752]], "meters": 870, "minutes": 12, "text": "Z hlavního nádraží pěšky asi 870 m (zhruba 12 minut): rovně po Palackého třídě, pak Nerudovou až na náměstí Čs. legií."},
   }],
   program_items: [
     { id: 'a', event_id: E, sort: 0, starts: '13:00', ends: '13:20', title: 'Zahájení akce', detail: 'Petr Doležel (děkan FEI UPCE), Ladislav Řoutil (děkan DFJP UPCE), Jiří Janků (ředitel P-PINK), Jan Homola (ředitel Defence Consulting s.r.o.), Leoš Mauer (ředitel Defence Hub CzechInvest)' },

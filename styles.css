@@ -236,3 +236,6 @@ label.ci span{font-size:13px;color:var(--muted)}
 .member .mc a{word-break:break-all}
 .tedit{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}
 @media (max-width:720px){.tedit{flex-wrap:wrap}.member .mc a{padding:3px 0}}
+
+.map{height:300px;border-radius:12px;overflow:hidden;background:var(--mist);margin-top:8px}
+@media (max-width:720px){.map{height:260px}}

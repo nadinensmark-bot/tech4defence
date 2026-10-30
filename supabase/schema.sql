@@ -459,3 +459,6 @@ create policy team_admin on public.event_team for all to authenticated
   using (public.is_admin()) with check (public.is_admin());
 grant select, insert, update, delete on public.event_team to authenticated;
 revoke all on public.event_team from anon;
+
+-- Cesta na místo konání (mapa v appce)
+alter table public.events add column if not exists directions jsonb;

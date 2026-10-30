@@ -60,4 +60,5 @@ begin
     (e, 3, 1, 'ELDIS, STV Group',    '{4,2}'),
     (e, 3, 2, 'Explosia, ERA, STV Technology', '{3,5}'),
     (e, 3, 3, 'Nitrocellulose, Spolana',       '{1,6}');
+  update public.events set directions = '{"from_label": "Hlavní nádraží", "from": [50.03257, 15.75673], "to_label": "FEI UPCE", "to": [50.03326, 15.7675], "path": [[50.03256, 15.75673], [50.03256, 15.75699], [50.03265, 15.7572], [50.03365, 15.76069], [50.03421, 15.76267], [50.03417, 15.7627], [50.03407, 15.76325], [50.03405, 15.76332], [50.03403, 15.76675], [50.03397, 15.76691], [50.03396, 15.76739], [50.03386, 15.76753], [50.03377, 15.76752], [50.03372, 15.76758], [50.03369, 15.76752], [50.03352, 15.76752]], "meters": 870, "minutes": 12, "text": "Z hlavního nádraží pěšky asi 870 m (zhruba 12 minut): rovně po Palackého třídě, pak Nerudovou až na náměstí Čs. legií."}'::jsonb where id = e;
 end $$;

@@ -149,15 +149,43 @@ function teamHtml(b) {
         <button class="small ghost" data-vcf='${esc(JSON.stringify({ c, ev }))}'>Uložit do telefonu</button></div></div>`; }).join('')}</div></div>`;
 }
 
+function directionsHtml(ev) {
+  const d = ev.directions; if (!d?.from || !d?.to) return '';
+  const ll = p => `${p[0]},${p[1]}`, lonlat = p => `${p[1]},${p[0]}`;
+  return `<div class="card"><h2>Jak se k${'\u00a0'}nám dostanete</h2>
+    <p>${nb(d.text || '')}</p>
+    <div id="map" class="map" aria-label="Mapa trasy z nádraží"></div>
+    <div class="row" style="margin-top:12px">
+      <a class="btn" target="_blank" rel="noopener" href="https://mapy.cz/fnc/v1/route?start=${lonlat(d.from)}&end=${lonlat(d.to)}&routeType=foot_fast">Navigovat v${'\u00a0'}Mapy.cz</a>
+      <a class="btn ghost" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&origin=${ll(d.from)}&destination=${ll(d.to)}&travelmode=walking">Google Maps</a>
+    </div></div>`;
+}
+async function drawMap(ev) {
+  const el = document.getElementById('map'); const d = ev.directions; if (!el || !d) return;
+  try {
+    if (!window.L) {
+      const css = document.createElement('link'); css.rel = 'stylesheet'; css.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css'; document.head.append(css);
+      await new Promise((ok, ko) => { const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js'; sc.onload = ok; sc.onerror = ko; document.head.append(sc); });
+    }
+    const L = window.L; const map = L.map(el, { scrollWheelZoom: false });
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+    const line = L.polyline(d.path || [d.from, d.to], { color: '#2B5CC4', weight: 5, opacity: .85 }).addTo(map);
+    const dot = (p, c) => L.circleMarker(p, { radius: 8, color: '#fff', weight: 3, fillColor: c, fillOpacity: 1 }).addTo(map);
+    dot(d.from, '#5C6886').bindTooltip(d.from_label || 'Start', { permanent: true, direction: 'bottom' });
+    dot(d.to, '#13234E').bindTooltip(d.to_label || 'Cíl', { permanent: true, direction: 'top' });
+    map.fitBounds(line.getBounds(), { padding: [30, 30] });
+  } catch { el.innerHTML = '<p class="muted" style="padding:12px">Mapu se nepodařilo načíst, použijte tlačítka níže.</p>'; }
+}
+
 function programHtml(b) {
   const ev = b.event;
   return `<div class="card">${b.program.map(p => `<div class="prog"><div class="t">${esc(span(p.starts, p.ends))}</div><div><b>${nb(p.title)}</b>${p.detail ? `<div class="muted">${nb(p.detail)}</div>` : ''}</div></div>`).join('') || '<p class="muted">Program doplníme.</p>'}</div>
   <div class="grid g2">
     <div class="card"><h3>Místo konání</h3><p>${nb(ev.venue || '')}<br>${esc(ev.address || '')}</p>
-      ${ev.address ? `<a class="btn ghost" target="_blank" rel="noopener" href="https://mapy.cz/zakladni?q=${encodeURIComponent(ev.address)}">Otevřít v${' '}Mapy.cz</a>` : ''}</div>
+      ${ev.address && !ev.directions ? `<a class="btn ghost" target="_blank" rel="noopener" href="https://mapy.cz/zakladni?q=${encodeURIComponent(ev.address)}">Otevřít v${' '}Mapy.cz</a>` : ''}</div>
     <div class="card"><h3>O akci</h3>${ev.organizers ? `<p>${nb('Pořádají ' + ev.organizers + '.')}</p>` : ''}${ev.description ? `<p class="muted">${nb(ev.description)}</p>` : ''}
       ${ev.contact_email ? `<p>Dotazy: <a href="mailto:${esc(ev.contact_email)}">${esc(ev.contact_email)}</a></p>` : ''}</div>
-  </div>${teamHtml(b)}`;
+  </div>${directionsHtml(ev)}${teamHtml(b)}`;
 }
 
 function profileHtml(me) {
@@ -202,7 +230,7 @@ async function viewEvent(id, tab = 'toceni') {
     <nav class="tabs evtabs">${tabs.map(([k, l, sh]) => `<a href="#/e/${id}/${k}" class="${k === tab ? 'on' : ''}" ${k === tab ? 'aria-current="page"' : ''}>${svg(k)}<span class="long">${l}</span><span class="short">${sh}</span></a>`).join('')}</nav>${body}</div></main>`);
   window.scrollTo(0, 0);
   if (after) await after();
-  if (tab === 'program') bindVcf();
+  if (tab === 'program') { bindVcf(); drawMap(b.event); }
   $('#pf')?.addEventListener('submit', async e => {
     e.preventDefault(); const fd = Object.fromEntries(new FormData(e.target)); fd.in_matchmaking = !!fd.in_matchmaking;
     try { await api.updateMyProfile(id, fd); toast('Profil uložen'); } catch (er) { toast('Chyba: ' + er.message, 5000); }
