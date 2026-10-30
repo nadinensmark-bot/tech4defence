@@ -46,6 +46,7 @@ function viewLogin(scanNote = false) {
   page(`<main><div class="wrap"><div class="login card">
     <h1>TECH4DEFENCE</h1>
     ${scanNote ? `<div class="notice" style="margin-bottom:12px">Naskenovali jste vizitku účastníka. Po přihlášení si s ním vyměníte kontakt.</div>` : ''}
+    ${window.__authError ? `<div class="notice warn" style="margin-bottom:12px">${esc(window.__authError)}</div>` : ''}
     <p class="muted">Přihlaste se e-mailem, který jste uvedli v${' '}registračním formuláři. Pošleme vám odkaz, heslo není potřeba.</p>
     <form id="lf"><label><span>E-mail</span><input type="email" name="email" required autocomplete="email" placeholder="jmeno@firma.cz"></label>
     <button type="submit">Poslat přihlašovací odkaz</button></form>
@@ -721,8 +722,15 @@ async function route() {
 
 api.onAuth(() => route());
 window.addEventListener('hashchange', route);
-if (location.search.includes('error_description')) {
-  const m = new URLSearchParams(location.search).get('error_description');
-  history.replaceState(null, '', location.pathname); setTimeout(() => toast('Odkaz už neplatí, pošlete si nový. (' + m + ')', 6000), 300);
+// Neplatný nebo prošlý odkaz z e-mailu (Supabase vrací chybu v hashi i v query)
+{
+  const src = location.hash.includes('error_description') ? location.hash.slice(1) : location.search.slice(1);
+  const qp = new URLSearchParams(src);
+  if (qp.get('error_description') || qp.get('error_code')) {
+    history.replaceState(null, '', location.pathname);
+    window.__authError = qp.get('error_code') === 'otp_expired'
+      ? 'Odkaz z e-mailu už neplatí (byl použitý, prošlý, nebo jste si mezitím nechali poslat nový). Pošlete si nový e-mail a přihlaste se kódem.'
+      : 'Přihlášení odkazem se nepovedlo. Pošlete si nový e-mail a přihlaste se kódem.';
+  }
 }
 route();
