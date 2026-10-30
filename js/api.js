@@ -3,6 +3,8 @@ import { DEMO_DATA } from './demo-data.js';
 
 const cfg = window.T4D_CONFIG || {};
 export const DEMO = !cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY || new URLSearchParams(location.search).has('demo');
+// ?demo=firma: ukázka pro firmy, rovnou přihlášený ukázkový účastník, bez administrace
+export const DEMO_FIRMA = new URLSearchParams(location.search).get('demo') === 'firma';
 
 function err(e) { if (e) throw new Error(e.message || String(e)); }
 
@@ -23,6 +25,10 @@ function supabaseApi() {
       const redirect = cfg.REDIRECT_URL || location.origin + location.pathname;
       const r = await sb.auth.signInWithOtp({ email: addr, options: { emailRedirectTo: redirect, shouldCreateUser: true } });
       err(r.error);
+    },
+    async verifyCode(addr, code) {
+      const { error } = await sb.auth.verifyOtp({ email: addr.trim().toLowerCase(), token: String(code).replace(/\s/g, ''), type: 'email' });
+      err(error);
     },
     async signOut() { await sb.auth.signOut(); },
     async isAdmin() {
@@ -101,7 +107,7 @@ function supabaseApi() {
 // ---------- DEMO ----------
 function demoApi() {
   const db = structuredClone(DEMO_DATA);
-  let session = null; const subs = [];
+  let session = DEMO_FIRMA ? { user: { email: 'ucastnik@demo.cz' } } : null; const subs = [];
   const uid = () => crypto.randomUUID();
   const me = () => session?.user?.email;
   const fire = () => subs.forEach(cb => cb(session));
@@ -111,11 +117,13 @@ function demoApi() {
     onAuth(cb) { subs.push(cb); },
     async sendLink(addr) {
       addr = addr.trim().toLowerCase();
+      if (DEMO_FIRMA) addr = 'ucastnik@demo.cz';
       const ok = db.admins.includes(addr) || db.participants.some(p => p.email === addr && ['registered', 'confirmed'].includes(p.status));
       if (ok) { session = { user: { email: addr } }; setTimeout(fire, 300); } // v demu se rovnou přihlásí
     },
+    async verifyCode() {},
     async signOut() { session = null; fire(); },
-    async isAdmin() { return db.admins.includes(me()); },
+    async isAdmin() { return !DEMO_FIRMA && db.admins.includes(me()); },
     async myRegistrations() {
       return db.participants.filter(p => p.email === me() && ['registered', 'confirmed'].includes(p.status))
         .map(p => ({ ...p, events: db.events.find(e => e.id === p.event_id) })).filter(p => p.events);

@@ -1,4 +1,4 @@
-import { api, DEMO } from './api.js';
+import { api, DEMO, DEMO_FIRMA } from './api.js';
 
 const $ = s => document.querySelector(s);
 const app = $('#app');
@@ -28,13 +28,14 @@ function loader(text = 'Hubík sedlá koně…') {
 // ---------- HLAVIČKA ----------
 function header() {
   const email = state.session?.user?.email;
-  return `${DEMO ? `<div class="demo-bar">DEMO režim bez backendu: data se neukládají. Přihlaste se jako <b>ucastnik@demo.cz</b> nebo <b>admin@demo.cz</b>.</div>` : ''}
+  return `${DEMO_FIRMA ? `<div class="demo-bar">Ukázka aplikace TECH4DEFENCE: firmy i${'\u00a0'}kontakty jsou smyšlené, nic se neukládá. Vyzkoušejte si záložky dole.</div>`
+    : DEMO ? `<div class="demo-bar">DEMO režim bez backendu: data se neukládají. Přihlaste se jako <b>ucastnik@demo.cz</b> nebo <b>admin@demo.cz</b>.</div>` : ''}
   <header class="top"><div class="wrap">
     <a class="logos" href="#/"><img src="assets/logo-cobrand-white.png" alt="Defence Hub CzechInvest"><img class="diana" src="assets/part-of-diana-white.png" alt="part of NATO DIANA"></a>
     <span class="spacer"></span>
-    ${email ? `<span class="who">${esc(email)}</span>
+    ${email ? `${DEMO_FIRMA ? "" : `<span class="who">${esc(email)}</span>`}
       ${state.admin ? `<a class="btn small" style="background:transparent;color:#fff;border-color:rgba(255,255,255,.35)" href="${location.hash.startsWith('#/admin') ? '#/' : '#/admin'}">${location.hash.startsWith('#/admin') ? '<span class="long">Pohled účastníka</span><span class="short">Účastník</span>' : '<span class="long">Administrace</span><span class="short">Admin</span>'}</a>` : ''}
-      <button class="small" id="logout">Odhlásit</button>` : ''}
+      ${DEMO_FIRMA ? '' : '<button class="small" id="logout">Odhlásit</button>'}` : ''}
   </div></header>`;
 }
 function bindHeader() { $('#logout')?.addEventListener('click', async () => { await api.signOut(); location.hash = '#/'; }); }
@@ -52,10 +53,20 @@ function viewLogin(scanNote = false) {
   </div></div></main>`);
   $('#lf').addEventListener('submit', async e => {
     e.preventDefault(); const btn = e.target.querySelector('button'); btn.disabled = true;
+    const addr = e.target.email.value;
     try {
-      await api.sendLink(e.target.email.value);
-      $('#lmsg').innerHTML = DEMO ? `<div class="notice">V demu vás rovnou přihlásíme (pokud e-mail v ukázkových datech existuje).</div>`
-        : `<div class="notice">Pokud je e-mail mezi registrovanými, přijde vám během chvilky odkaz. Zkontrolujte i${' '}spam. Nepřišel? Použijte e-mail z${' '}registrace, případně kontaktujte organizátory.</div>`;
+      await api.sendLink(addr);
+      if (DEMO) { $('#lmsg').innerHTML = `<div class="notice">V${'\u00a0'}demu vás rovnou přihlásíme (pokud e-mail v${'\u00a0'}ukázkových datech existuje).</div>`; btn.disabled = false; return; }
+      $('#lmsg').innerHTML = `<div class="notice">Pokud je e-mail mezi registrovanými, přijde vám během chvilky e-mail s${'\u00a0'}<b>kódem</b> a${'\u00a0'}odkazem. Zkontrolujte i${'\u00a0'}spam.</div>
+        <form id="cf" style="margin-top:14px"><label><span>Kód z${'\u00a0'}e-mailu</span><input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{6,10}" required placeholder="123456" style="font-size:22px;letter-spacing:.2em;text-align:center"></label>
+        <button type="submit">Přihlásit se kódem</button></form>
+        <p class="muted" style="font-size:14px;margin-top:10px">Odkaz v${'\u00a0'}e-mailu nefunguje? Firemní pošta ho někdy předem „proklikne“ a${'\u00a0'}tím ho zneplatní. Kód funguje vždy.</p>`;
+      $('#cf').addEventListener('submit', async ev => {
+        ev.preventDefault(); const b2 = ev.target.querySelector('button'); b2.disabled = true;
+        try { await api.verifyCode(addr, ev.target.code.value); }
+        catch (er) { toast('Kód nesedí nebo už vypršel. Pošlete si nový.', 5000); b2.disabled = false; }
+      });
+      $('#cf input').focus();
     } catch (er) { $('#lmsg').innerHTML = `<div class="notice err">Odkaz se nepodařilo odeslat: ${esc(er.message)}</div>`; }
     btn.disabled = false;
   });
