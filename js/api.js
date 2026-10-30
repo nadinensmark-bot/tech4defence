@@ -1,5 +1,5 @@
 // Datová vrstva: Supabase (ostrý režim) nebo DEMO (bez backendu, data jen v paměti prohlížeče)
-import { DEMO_DATA } from './demo-data.js?v=20261030d';
+import { DEMO_DATA } from './demo-data.js?v=20261030e';
 
 const cfg = window.T4D_CONFIG || {};
 export const DEMO = !cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY || new URLSearchParams(location.search).has('demo');
