@@ -498,7 +498,8 @@ export function mapFormRow(row) {
     description: get('výstižný*', 'medailonek', 'popis firmy'),
     sector: get('sektor vaší firmy', 'sektor'),
     reasons: (get('proč se účastním*') || '').split(';').map(x => x.trim()).filter(Boolean).join('; ') || null,
-    form_id: get('id'),
+    form_id: get('id', 'id přihlášky'),
+    group_no: (String(get('skupina') || '').match(/\d+/) || [null])[0] ? +String(get('skupina')).match(/\d+/)[0] : null,
   };
 }
 
@@ -536,7 +537,7 @@ function adminParticipants(b, ps, wrap) {
       <div class="card"><div class="stat">${ps.filter(p => p.checked_in_at).length}</div><div class="muted">prošlo prezencí · <span id="conncount">…</span> vyměněných kontaktů</div></div>
       <div class="card"><div class="row">${b.groups.map(g => `<span class="chip"><i class="dot" style="background:${esc(g.color_hex)}"></i>${g.group_no}: ${grpCount(g.group_no)}</span>`).join('') || '<span class="muted">Skupiny nejsou nastavené (záložka Točení)</span>'}</div></div>
     </div>
-    <div class="card"><h3>Import registrací</h3><p class="muted">Nahrajte export z${' '}MS Forms (Formulář zájmu o${' '}akci …xlsx) nebo CSV. Existující účastníky (podle e-mailu) jen aktualizuje, stav ani skupinu nepřepíše.</p>
+    <div class="card"><h3>Import registrací</h3><p class="muted">Nahrajte export z${' '}MS Forms (Formulář zájmu o${' '}akci …xlsx) nebo CSV. Soubor s${'\u00a0'}rozdělením do skupin (sloupce „Skupina“ a „ID přihlášky“) se spáruje podle ID. Existující účastníky (podle e-mailu) jen aktualizuje, stav ani skupinu nepřepíše.</p>
       <div class="row"><input type="file" id="file" accept=".xlsx,.xls,.csv" style="width:auto"></div><div id="imp"></div></div>
     <div class="card"><div class="row" style="justify-content:space-between;margin-bottom:10px">
       <input id="q" placeholder="Hledat firmu, jméno, e-mail…" value="${esc(filter)}" style="max-width:320px">
@@ -587,6 +588,22 @@ function adminParticipants(b, ps, wrap) {
       const file = e.target.files[0]; if (!file) return;
       const XLSX = await loadXLSX(); const wb = XLSX.read(await file.arrayBuffer());
       const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' }).map(mapFormRow);
+      // Soubor s rozdělením do skupin (bez e-mailů): párovat podle ID přihlášky z formuláře
+      if (!rows.some(r => r.email) && rows.some(r => r.form_id && r.group_no)) {
+        const byForm = new Map(ps.map(p => [String(p.form_id), p]));
+        const hits = rows.filter(r => r.form_id && r.group_no && byForm.has(String(r.form_id)));
+        const miss = rows.filter(r => r.form_id && r.group_no && !byForm.has(String(r.form_id)));
+        $('#imp').innerHTML = `<div class="notice" style="margin-top:10px">Rozdělení do skupin: ${hits.length} účastníků spárováno podle ID přihlášky${miss.length ? `, ${miss.length} bez shody (ID ${miss.map(r => r.form_id).join(', ')}: nejdřív importujte aktuální export z${'\u00a0'}Forms)` : ''}.</div>
+          <div class="row" style="margin-top:10px"><button id="doimp">Nastavit skupiny</button></div>`;
+        $('#doimp').onclick = async () => {
+          try {
+            const ch = hits.map(r => ({ id: byForm.get(String(r.form_id)).id, group_no: r.group_no }));
+            await api.updateParticipants(ch); ps = await api.listParticipants(id); toast(`Skupiny nastaveny: ${ch.length}`); draw();
+          } catch (er) { toast('Chyba: ' + er.message, 6000); }
+        };
+        return;
+      }
+      rows.forEach(r => delete r.group_no); // běžný import z Forms skupiny nepřepisuje
       const bad = rows.filter(r => !r.email); const map = new Map();
       rows.filter(r => r.email).forEach(r => map.set(r.email, r)); // duplicita ve formuláři: platí poslední odpověď
       const good = [...map.values()]; const known = new Set(ps.map(p => p.email));

@@ -47,17 +47,17 @@ begin
   insert into public.rooms(event_id, room_no, name) values
     (e, 1, 'Zasedačka 1'), (e, 2, 'Zasedačka 2'), (e, 3, 'Zasedačka 3');
 
-  -- Časy kol nejsou v podkladech: doplnit v adminu
-  insert into public.rounds(event_id, round_no) values (e, 1), (e, 2), (e, 3);
+  -- Začátek 1. kola 13:20 (T4D_Pardubice_rozdeleni_skupin.xlsx), další časy doplnit v adminu
+  insert into public.rounds(event_id, round_no, starts) values (e, 1, '13:20'), (e, 2, null), (e, 3, null);
 
   insert into public.rotation_slots(event_id, round_no, room_no, lead, group_nos) values
     (e, 1, 1, 'Explosia, ERA, STV Technology', '{1,2}'),
     (e, 1, 2, 'Nitrocellulose, Spolana',       '{3,4}'),
-    (e, 1, 3, 'ELDIS, STV Group, Kara UAS',    '{5,6}'),
+    (e, 1, 3, 'ELDIS, STV Group',    '{5,6}'),
     (e, 2, 1, 'Nitrocellulose, Spolana',       '{2,5}'),
-    (e, 2, 2, 'ELDIS, STV Group, Kara UAS',    '{3,1}'),
+    (e, 2, 2, 'ELDIS, STV Group',    '{3,1}'),
     (e, 2, 3, 'Explosia, ERA, STV Technology', '{4,6}'),
-    (e, 3, 1, 'ELDIS, STV Group, Kara UAS',    '{4,2}'),
+    (e, 3, 1, 'ELDIS, STV Group',    '{4,2}'),
     (e, 3, 2, 'Explosia, ERA, STV Technology', '{3,5}'),
     (e, 3, 3, 'Nitrocellulose, Spolana',       '{1,6}');
 end $$;
