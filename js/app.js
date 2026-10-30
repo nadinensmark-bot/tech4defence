@@ -1,4 +1,4 @@
-import { api, DEMO, DEMO_FIRMA } from './api.js?v=20261030b';
+import { api, DEMO, DEMO_FIRMA } from './api.js?v=20261030c';
 
 const $ = s => document.querySelector(s);
 const app = $('#app');
@@ -243,14 +243,24 @@ const isIOS = () => /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.pla
 
 export function vcard(c, ev) {
   const e = s => String(s ?? '').replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/([,;])/g, '\\$1');
-  const parts = String(c.full_name || '').trim().split(/\s+/).filter(Boolean);
-  const first = parts.shift() || ''; const last = parts.join(' ');
+  // tituly před jménem (Ing., Mgr., …) a za jménem (Ph.D., MBA, …) do prefixu/sufixu, ať se kontakt správně řadí
+  let rest = String(c.full_name || '').trim(); const suf = [];
+  rest = rest.replace(/,\s*([^,]+)$/, (m, x) => { suf.push(x.trim()); return ''; }).trim();
+  const words = rest.split(/\s+/).filter(Boolean); const pre = [];
+  while (words.length > 1 && /\.$/.test(words[0])) pre.push(words.shift());
+  while (words.length > 1 && /^(Ph\.?D\.?|CSc\.?|DrSc\.?|MBA|LL\.?M\.?|DiS\.?|MSc\.?|BSc\.?)$/i.test(words[words.length - 1])) suf.unshift(words.pop());
+  const first = words.shift() || ''; const last = words.join(' ');
   const web = c.web ? (/^https?:/i.test(c.web) ? c.web : 'https://' + c.web) : '';
+  let tel = String(c.phone || '').replace(/[^\d+]/g, '');
+  if (tel.replace(/\D/g, '').length < 9 || /@/.test(c.phone || '')) tel = ''; // v poli telefon bývá i e-mail
+  else if (/^00/.test(tel)) tel = '+' + tel.slice(2);
+  else if (/^\d{9}$/.test(tel)) tel = '+420' + tel;
   const note = ev ? `Potkali jsme se na ${ev.name || ev.event_name || 'TECH4DEFENCE'}${(ev.date || ev.event_date) ? ', ' + new Date((ev.date || ev.event_date) + 'T12:00').toLocaleDateString('cs-CZ') : ''}` : '';
-  return ['BEGIN:VCARD', 'VERSION:3.0', `N:${e(last)};${e(first)};;;`, `FN:${e(c.full_name || c.company)}`,
+  const fold = l => { const out = []; let cur = ''; for (const ch of l) { if (new TextEncoder().encode(cur + ch).length > 74) { out.push(cur); cur = ' ' + ch; } else cur += ch; } out.push(cur); return out.join('\r\n'); };
+  return ['BEGIN:VCARD', 'VERSION:3.0', `N:${e(last)};${e(first)};;${e(pre.join(' '))};${e(suf.join(', '))}`, `FN:${e(c.full_name || c.company)}`,
     c.company && `ORG:${e(c.company)}`, c.position && `TITLE:${e(c.position)}`,
-    c.phone && `TEL;TYPE=CELL:${String(c.phone).replace(/[^\d+]/g, '')}`, c.email && `EMAIL;TYPE=WORK:${c.email}`,
-    web && `URL:${web}`, note && `NOTE:${e(note)}`, 'END:VCARD'].filter(Boolean).join('\r\n');
+    tel && `TEL;TYPE=CELL:${tel}`, c.email && `EMAIL;TYPE=WORK:${String(c.email).trim()}`,
+    web && `URL:${web}`, note && `NOTE:${e(note)}`, 'END:VCARD'].filter(Boolean).map(fold).join('\r\n') + '\r\n';
 }
 function saveVcf(text, name) {
   const file = (name || 'kontakt').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w.-]+/g, '-').slice(0, 60) + '.vcf';
