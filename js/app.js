@@ -1,4 +1,4 @@
-import { api, DEMO, DEMO_FIRMA } from './api.js';
+import { api, DEMO, DEMO_FIRMA } from './api.js?v=20261030';
 
 const $ = s => document.querySelector(s);
 const app = $('#app');
