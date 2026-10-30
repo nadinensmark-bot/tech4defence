@@ -1,4 +1,4 @@
-import { api, DEMO, DEMO_FIRMA } from './api.js?v=20261030';
+import { api, DEMO, DEMO_FIRMA } from './api.js?v=20261030b';
 
 const $ = s => document.querySelector(s);
 const app = $('#app');
@@ -47,9 +47,9 @@ function viewLogin(scanNote = false) {
     <h1>TECH4DEFENCE</h1>
     ${scanNote ? `<div class="notice" style="margin-bottom:12px">Naskenovali jste vizitku účastníka. Po přihlášení si s ním vyměníte kontakt.</div>` : ''}
     ${window.__authError ? `<div class="notice warn" style="margin-bottom:12px">${esc(window.__authError)}</div>` : ''}
-    <p class="muted">Přihlaste se e-mailem, který jste uvedli v${' '}registračním formuláři. Pošleme vám odkaz, heslo není potřeba.</p>
+    <p class="muted">Přihlaste se e-mailem, který jste uvedli v${' '}registračním formuláři. Pošleme vám přihlašovací kód, heslo není potřeba.</p>
     <form id="lf"><label><span>E-mail</span><input type="email" name="email" required autocomplete="email" placeholder="jmeno@firma.cz"></label>
-    <button type="submit">Poslat přihlašovací odkaz</button></form>
+    <button type="submit">Poslat přihlašovací kód</button></form>
     <div id="lmsg" style="margin-top:14px"></div>
   </div></div></main>`);
   $('#lf').addEventListener('submit', async e => {
@@ -340,7 +340,7 @@ async function contactsView(b, me, id) {
       <p class="muted">Ukažte kód. Druhý účastník ho naskenuje fotoaparátem telefonu a${'\u00a0'}vyměníte si kontakty (on dostane váš, vy jeho).</p>
       <div class="row"><button class="ghost small" id="cpl">Kopírovat odkaz</button><a class="btn ghost small" href="#/e/${id}/profil">Upravit, co sdílím</a></div></div>
     <div class="card"><h2>Kontakty z${'\u00a0'}akce <span class="muted">(${ok.length})</span></h2>
-      ${ok.length ? `<p class="muted">Uložte si je jedním klepnutím do telefonu.</p>${ok.length > 1 ? '<button id="allvcf" class="ghost">Stáhnout všechny (.vcf)</button>' : ''}` : '<p class="muted">Zatím žádné. Naskenujte vizitku jiného účastníka nebo pošlete žádost v${"\u00a0"}Matchmakingu.</p>'}
+      ${ok.length ? `<p class="muted">Uložte si je jedním klepnutím do telefonu.</p>${ok.length > 1 ? '<button id="allvcf" class="ghost">Stáhnout všechny (.vcf)</button>' : ''}` : '<p class="muted">Zatím žádné. Naskenujte vizitku jiného účastníka nebo pošlete žádost v Matchmakingu.</p>'}
       ${incoming.length ? `<h3 style="margin-top:18px">Čekají na vás (${incoming.length})</h3>${incoming.map(c => `<div class="req"><div><b>${esc(c.full_name)}</b> · ${esc(c.company)}${c.message ? `<div class="muted">„${esc(c.message)}“</div>` : ''}</div><div class="row"><button class="small" data-acc="${c.conn_id}">Přijmout</button><button class="small ghost" data-dec="${c.conn_id}">Odmítnout</button></div></div>`).join('')}` : ''}
       ${sent.length ? `<h3 style="margin-top:18px">Odeslané žádosti</h3>${sent.map(c => `<div class="muted">${esc(c.company)} (${esc(c.full_name)})</div>`).join('')}` : ''}
     </div></div>
