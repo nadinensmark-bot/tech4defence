@@ -1,4 +1,4 @@
-import { api, DEMO, DEMO_FIRMA } from './api.js?v=20261030e';
+import { api, DEMO, DEMO_FIRMA, DEMO_USER } from './api.js?v=20261030f';
 
 const $ = s => document.querySelector(s);
 const app = $('#app');
@@ -28,7 +28,7 @@ function loader(text = 'Hubík sedlá koně…') {
 // ---------- HLAVIČKA ----------
 function header() {
   const email = state.session?.user?.email;
-  return `${DEMO_FIRMA ? `<div class="demo-bar">Ukázka aplikace TECH4DEFENCE: firmy i${'\u00a0'}kontakty jsou smyšlené, nic se neukládá. Vyzkoušejte si záložky dole.</div>`
+  return `${DEMO_FIRMA ? `<div class="demo-bar">Ukázka aplikace TECH4DEFENCE ${DEMO_USER === 'zbrojar@demo.cz' ? 'pro zbrojaře' : 'pro firmy'}: firmy i${'\u00a0'}kontakty jsou smyšlené, nic se neukládá. Vyzkoušejte si záložky dole.</div>`
     : DEMO ? `<div class="demo-bar">DEMO režim bez backendu: data se neukládají. Přihlaste se jako <b>ucastnik@demo.cz</b> nebo <b>admin@demo.cz</b>.</div>` : ''}
   <header class="top"><div class="wrap">
     <a class="logos" href="#/"><img src="assets/logo-cobrand-white.png" alt="Defence Hub CzechInvest"><img class="diana" src="assets/part-of-diana-white.png" alt="part of NATO DIANA"></a>
@@ -92,6 +92,49 @@ function hero(ev, compact = false) {
     <h1>${nb(ev.name)}</h1>${ev.subtitle ? `<p class="sub">${nb(ev.subtitle)}</p>` : ''}
     <div class="meta"><span>${esc(dateCz(ev.date))}</span><span>${esc(span(ev.time_from, ev.time_to))}</span><span>${nb(ev.venue || '')}</span></div>
   </div></section>`;
+}
+
+// ---------- ZBROJAŘ: můj stůl ----------
+const toks = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+// stůl v rozpisu („Explosia, ERA, STV Technology“) patří firmě, když všechna slova některého názvu najdeme v názvu firmy
+export function leadMatches(lead, company) {
+  const c = new Set(toks(company)); if (!c.size) return false;
+  return String(lead || '').split(',').some(n => { const t = toks(n).filter(x => x !== 'demo'); return t.length && t.every(x => c.has(x)); });
+}
+async function defenceView(b, me, id) {
+  const vis = await api.defenceVisitors(id);
+  const grp = n => b.groups.find(x => x.group_no === n);
+  const room = n => b.rooms.find(r => r.room_no === n);
+  const mine = b.slots.filter(s => s.lead && leadMatches(s.lead, me.company));
+  const ev = { name: b.event.name, date: b.event.date };
+  const card = p => { const g = grp(p.group_no); const reasons = reasonsChips(p.reasons);
+    return `<div class="card firm"><h3>${esc(p.company)}</h3><div class="muted">${esc([p.full_name, p.position].filter(Boolean).join(' · '))}</div>
+      <div class="row" style="margin:8px 0">${g ? `<span class="chip"><i class="dot" style="background:${esc(g.color_hex)}"></i>Skupina ${g.group_no}</span>` : ''}${p.sector ? `<span class="chip">${esc(p.sector)}</span>` : ''}</div>
+      ${p.description ? `<p class="desc">${nb(p.description)}</p>` : ''}
+      ${reasons.length ? `<div class="reasons">${reasons.map(r => `<span>${esc(r)}</span>`).join('')}</div>` : ''}
+      <div class="cinfo">${p.phone ? `<a href="tel:${esc(String(p.phone).replace(/\s/g, ''))}">${esc(p.phone)}</a>` : ''}${p.email ? `<a href="mailto:${esc(p.email)}">${esc(p.email)}</a>` : ''}${!p.phone && !p.email ? '<span class="muted">Kontakt firma nesdílí (odhlásila se z\u00a0matchmakingu).</span>' : ''}</div>
+      ${p.phone || p.email ? `<div class="row"><button data-vcf='${esc(JSON.stringify({ c: p, ev }))}'>Uložit do telefonu</button></div>` : ''}</div>`; };
+  let html = `<div class="card"><h2>Váš stůl</h2><p>${esc(me.company)}</p>
+    <p class="muted" style="margin:0">U${' '}stolu sedíte celé odpoledne a${' '}civilní firmy se k${' '}vám po skupinách střídají. U${' '}každého kola vidíte, kdo přijde, i${' '}s${' '}kontakty.</p></div>`;
+  if (!mine.length) html += `<div class="notice warn" style="margin-top:16px">Váš stůl jsme v${' '}rozpisu točení nenašli. Ozvěte se prosím organizátorům (kontakty v${' '}záložce Program).</div>`;
+  for (const r of b.rounds) {
+    const s = mine.find(x => x.round_no === r.round_no); if (!s) continue;
+    const rm = room(s.room_no); const firms = vis.filter(v => (s.group_nos || []).includes(v.group_no));
+    html += `<div class="card" style="margin-top:16px"><div class="round" style="border:0;padding:0"><div class="rn">${r.round_no}.<small>${esc(span(r.starts, r.ends) || 'KOLO')}</small></div><div>
+      <div class="room">${esc(rm?.name || 'Místnost ' + s.room_no)}</div>${rm?.location_hint ? `<div class="muted">${nb(rm.location_hint)}</div>` : ''}
+      <div class="lead">U${' '}stolu: <b>${esc(s.lead)}</b></div>
+      <div>${(s.group_nos || []).map(n => { const x = grp(n); return `<span class="chip"><i class="dot" style="background:${esc(x?.color_hex)}"></i>Skupina ${n}${x ? ' · ' + esc(x.color_name) : ''}</span>`; }).join('')}</div></div></div>
+      <p class="muted" style="margin:12px 0">${firms.length} ${firms.length === 1 ? 'firma' : firms.length >= 2 && firms.length <= 4 ? 'firmy' : 'firem'} v${' '}tomto kole${firms.some(f => f.phone || f.email) ? ` · <button class="small ghost" data-allr="${r.round_no}">Uložit všechny kontakty z${' '}kola (.vcf)</button>` : ''}</p>
+      <div class="grid g2">${firms.map(card).join('') || '<p class="muted">Ve skupinách zatím nejsou potvrzené firmy.</p>'}</div></div>`;
+  }
+  html += matrix(b, null);
+  const after = () => {
+    bindVcf();
+    app.querySelectorAll('[data-allr]').forEach(btn => btn.onclick = () => { const s = mine.find(x => x.round_no === +btn.dataset.allr);
+      const list = vis.filter(v => (s.group_nos || []).includes(v.group_no) && (v.phone || v.email));
+      saveVcf(list.map(c => vcard(c, ev)).join(''), `kontakty-kolo-${btn.dataset.allr}`); });
+  };
+  return { html, after };
 }
 
 function myRotation(b, me) {
@@ -215,7 +258,7 @@ async function viewEvent(id, tab = 'toceni') {
   const me = regs.find(r => r.event_id === id);
   if (!me) { location.hash = '#/'; return; }
   const b = await api.eventBundle(id);
-  const tabs = [['toceni', 'Moje točení', 'Točení']];
+  const tabs = [me.kind === 'defence' ? ['toceni', 'Můj stůl', 'Můj stůl'] : ['toceni', 'Moje točení', 'Točení']];
   if (b.event.directory_enabled) tabs.push(['matchmaking', 'Matchmaking', 'Firmy']);
   tabs.push(['kontakty', 'Kontakty', 'Kontakty'], ['program', 'Program', 'Program'], ['profil', 'Profil', 'Profil']);
   if (!tabs.some(t => t[0] === tab)) tab = 'toceni';
@@ -224,6 +267,7 @@ async function viewEvent(id, tab = 'toceni') {
   else if (tab === 'profil') body = profileHtml(me);
   else if (tab === 'matchmaking' && b.event.directory_enabled) ({ html: body, after } = await mmView(b, me, id));
   else if (tab === 'kontakty') ({ html: body, after } = await contactsView(b, me, id));
+  else if (me.kind === 'defence') ({ html: body, after } = await defenceView(b, me, id));
   else body = myRotation(b, me);
   page(hero(b.event, tab !== 'toceni' && tab !== 'program') + `<main class="evmain"><div class="wrap">
     ${me.status === 'registered' ? `<div class="notice warn" style="margin-bottom:16px">Vaše registrace čeká na potvrzení organizátorů. O${' '}potvrzení vás budeme informovat e-mailem.</div>` : ''}
@@ -618,6 +662,20 @@ export function autoAssign(ps, groups, all = false) {
   return out;
 }
 
+// kontrola: má každý stůl zbrojařů v rozpisu účet a sedí každý zbrojař u nějakého stolu?
+function defenceCheck(b, ps) {
+  const def = ps.filter(p => p.kind === 'defence' && p.status !== 'cancelled' && p.status !== 'declined');
+  const names = [...new Set(b.slots.flatMap(s => String(s.lead || '').split(',').map(x => x.trim()).filter(Boolean)))];
+  const noAcc = names.filter(n => !def.some(d => leadMatches(n, d.company)));
+  const noTable = def.filter(d => !b.slots.some(s => leadMatches(s.lead, d.company)));
+  if (!names.length && !def.length) return '';
+  return `<div class="card"><h3>Zbrojaři u${'\u00a0'}stolů</h3>
+    <p class="muted">Zbrojař (typ účastníka „Zbrojař“) vidí v${'\u00a0'}aplikaci svůj stůl a${'\u00a0'}firmy, které k${'\u00a0'}němu v${'\u00a0'}každém kole přijdou, i${'\u00a0'}s${'\u00a0'}kontakty. Stůl se páruje podle názvu firmy a${'\u00a0'}názvu v${'\u00a0'}rozpisu točení.</p>
+    ${def.length ? `<div class="row">${def.map(d => `<span class="chip">${esc(d.company)}: ${esc(d.full_name || d.email)}</span>`).join('')}</div>` : ''}
+    ${noAcc.length ? `<div class="notice warn" style="margin-top:10px">Bez účtu v${'\u00a0'}aplikaci: ${noAcc.map(esc).join(', ')}. Přidejte je jako účastníky typu Zbrojař (název firmy musí obsahovat název z${'\u00a0'}rozpisu).</div>` : ''}
+    ${noTable.length ? `<div class="notice err" style="margin-top:10px">Nesedí u${'\u00a0'}žádného stolu v${'\u00a0'}rozpisu: ${noTable.map(d => esc(d.company)).join(', ')}. Upravte název firmy nebo název stolu v${'\u00a0'}Točení.</div>` : ''}
+    ${!noAcc.length && !noTable.length ? '<div class="notice" style="margin-top:10px">Všechny stoly mají účet a\u00a0každý zbrojař sedí u\u00a0stolu.</div>' : ''}</div>`;
+}
 function adminParticipants(b, ps, wrap) {
   const id = b.event.id;
   let filter = '';
@@ -631,6 +689,7 @@ function adminParticipants(b, ps, wrap) {
       <div class="card"><div class="stat">${ps.filter(p => p.checked_in_at).length}</div><div class="muted">prošlo prezencí · <span id="conncount">…</span> vyměněných kontaktů</div></div>
       <div class="card"><div class="row">${b.groups.map(g => `<span class="chip"><i class="dot" style="background:${esc(g.color_hex)}"></i>${g.group_no}: ${grpCount(g.group_no)}</span>`).join('') || '<span class="muted">Skupiny nejsou nastavené (záložka Točení)</span>'}</div></div>
     </div>
+    ${defenceCheck(b, ps)}
     <div class="card"><h3>Import registrací</h3><p class="muted">Nahrajte export z${' '}MS Forms (Formulář zájmu o${' '}akci …xlsx) nebo CSV. Soubor s${'\u00a0'}rozdělením do skupin (sloupce „Skupina“ a „ID přihlášky“) se spáruje podle ID. Existující účastníky (podle e-mailu) jen aktualizuje, stav ani skupinu nepřepíše.</p>
       <div class="row"><input type="file" id="file" accept=".xlsx,.xls,.csv" style="width:auto"></div><div id="imp"></div></div>
     <div class="card"><div class="row" style="justify-content:space-between;margin-bottom:10px">

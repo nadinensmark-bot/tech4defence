@@ -462,3 +462,19 @@ revoke all on public.event_team from anon;
 
 -- Cesta na místo konání (mapa v appce)
 alter table public.events add column if not exists directions jsonb;
+
+-- ============ ZBROJAŘI (stoly) ============
+-- Zbrojař (kind = 'defence') vidí potvrzené civilní firmy i s kontakty rovnou; kontakt se neukáže, pokud se firma z matchmakingu odhlásila.
+create or replace function public.defence_visitors(p_event uuid)
+returns table (id uuid, full_name text, company text, "position" text, sector text, description text, reasons text, web text, group_no int, email text, phone text)
+language sql stable security definer set search_path = public as $$
+  select p.id, p.full_name, p.company, p.position, p.sector, p.description, p.reasons, p.web, p.group_no,
+         case when p.in_matchmaking then p.email end, case when p.in_matchmaking then p.phone end
+  from public.participants p
+  where p.event_id = p_event and p.kind = 'civil' and p.status = 'confirmed'
+    and (public.is_admin() or exists (select 1 from public.participants d where d.event_id = p_event
+         and d.email = public.jwt_email() and d.kind = 'defence' and d.status in ('registered','confirmed')))
+  order by p.group_no nulls last, p.company
+$$;
+revoke all on function public.defence_visitors(uuid) from public, anon;
+grant execute on function public.defence_visitors(uuid) to authenticated;

@@ -1,10 +1,12 @@
 // Datová vrstva: Supabase (ostrý režim) nebo DEMO (bez backendu, data jen v paměti prohlížeče)
-import { DEMO_DATA } from './demo-data.js?v=20261030e';
+import { DEMO_DATA } from './demo-data.js?v=20261030f';
 
 const cfg = window.T4D_CONFIG || {};
 export const DEMO = !cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY || new URLSearchParams(location.search).has('demo');
-// ?demo=firma: ukázka pro firmy, rovnou přihlášený ukázkový účastník, bez administrace
-export const DEMO_FIRMA = new URLSearchParams(location.search).get('demo') === 'firma';
+// ?demo=firma / ?demo=zbrojar: ukázka pro firmy / zbrojaře, rovnou přihlášený ukázkový účet, bez administrace
+const DEMO_USERS = { firma: 'ucastnik@demo.cz', zbrojar: 'zbrojar@demo.cz' };
+export const DEMO_USER = DEMO_USERS[new URLSearchParams(location.search).get('demo')] || null;
+export const DEMO_FIRMA = !!DEMO_USER;
 
 function err(e) { if (e) throw new Error(e.message || String(e)); }
 
@@ -60,6 +62,9 @@ function supabaseApi() {
     async directory(eventId) {
       const { data, error } = await sb.rpc('event_directory', { p_event: eventId }); err(error); return data || [];
     },
+    async defenceVisitors(eventId) {
+      const { data, error } = await sb.rpc('defence_visitors', { p_event: eventId }); err(error); return data || [];
+    },
     // ---- admin ----
     async listEvents() {
       const { data, error } = await sb.from('events').select('*').order('date', { ascending: false }); err(error); return data;
@@ -109,7 +114,7 @@ function supabaseApi() {
 // ---------- DEMO ----------
 function demoApi() {
   const db = structuredClone(DEMO_DATA);
-  let session = DEMO_FIRMA ? { user: { email: 'ucastnik@demo.cz' } } : null; const subs = [];
+  let session = DEMO_USER ? { user: { email: DEMO_USER } } : null; const subs = [];
   const uid = () => crypto.randomUUID();
   const me = () => session?.user?.email;
   const fire = () => subs.forEach(cb => cb(session));
@@ -119,13 +124,17 @@ function demoApi() {
     onAuth(cb) { subs.push(cb); },
     async sendLink(addr) {
       addr = addr.trim().toLowerCase();
-      if (DEMO_FIRMA) addr = 'ucastnik@demo.cz';
+      if (DEMO_USER) addr = DEMO_USER;
       const ok = db.admins.includes(addr) || db.participants.some(p => p.email === addr && ['registered', 'confirmed'].includes(p.status));
       if (ok) { session = { user: { email: addr } }; setTimeout(fire, 300); } // v demu se rovnou přihlásí
     },
     async verifyCode() {},
     async signOut() { session = null; fire(); },
     async isAdmin() { return !DEMO_FIRMA && db.admins.includes(me()); },
+    async defenceVisitors(eventId) {
+      return byEvent('participants', eventId).filter(p => p.kind === 'civil' && p.status === 'confirmed')
+        .map(p => ({ ...p, email: p.in_matchmaking ? p.email : null, phone: p.in_matchmaking ? p.phone : null }));
+    },
     async myRegistrations() {
       return db.participants.filter(p => p.email === me() && ['registered', 'confirmed'].includes(p.status))
         .map(p => ({ ...p, events: db.events.find(e => e.id === p.event_id) })).filter(p => p.events);

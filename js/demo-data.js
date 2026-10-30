@@ -14,6 +14,11 @@ const participants = names.map((n, i) => ({
   phone: `+420 600 000 ${String(100 + i)}`, web: `firma-${i}.example.cz`, card_token: 'demo' + i, in_matchmaking: true,
 }));
 // ukázkové propojení: Firma Gama žádá o kontakt, s Firmou Delta už je kontakt vyměněný přes QR
+// ukázkový zbrojař: sedí u stolu „Radar Delta“ a vidí firmy, které k němu v jednotlivých kolech přijdou
+participants.push({ id: 'd1', event_id: E, email: 'zbrojar@demo.cz', full_name: 'Karel Ukázkový', company: 'Radar Delta a.s. (demo)', ico: '',
+  position: 'Ředitel nákupu', phone: '+420 600 000 900', web: 'radar-delta.example.cz', sector: 'Radiolokace a radary',
+  description: 'Ukázkový zbrojař: hledáme subdodavatele elektroniky a obrábění.', reasons: '', kind: 'defence', status: 'confirmed',
+  group_no: null, checked_in_at: null, card_token: 'demod1', in_matchmaking: true });
 const connections = [
   { id: 'c1', event_id: E, from_id: 'p2', to_id: 'p0', status: 'pending', source: 'request', message: 'Dobrý den, hledáme subdodavatele obrábění, rádi bychom se na akci potkali.', created_at: '2026-11-05T10:00:00Z' },
   { id: 'c2', event_id: E, from_id: 'p0', to_id: 'p3', status: 'accepted', source: 'qr', message: null, created_at: '2026-11-05T11:00:00Z' },
@@ -42,9 +47,9 @@ export const DEMO_DATA = {
   rooms: [1, 2, 3].map(n => ({ event_id: E, room_no: n, name: 'Zasedačka ' + n, location_hint: null })),
   rounds: [1, 2, 3].map(n => ({ event_id: E, round_no: n, starts: n === 1 ? '13:20' : null, ends: null })),
   rotation_slots: [
-    [1, 1, 'Explosia, ERA, STV Technology', [1, 2]], [1, 2, 'Nitrocellulose, Spolana', [3, 4]], [1, 3, 'ELDIS, STV Group', [5, 6]],
-    [2, 1, 'Nitrocellulose, Spolana', [2, 5]], [2, 2, 'ELDIS, STV Group', [3, 1]], [2, 3, 'Explosia, ERA, STV Technology', [4, 6]],
-    [3, 1, 'ELDIS, STV Group', [4, 2]], [3, 2, 'Explosia, ERA, STV Technology', [3, 5]], [3, 3, 'Nitrocellulose, Spolana', [1, 6]],
+    [1, 1, 'Munice Alfa, Obrana Beta (demo)', [1, 2]], [1, 2, 'Chemie Gama (demo)', [3, 4]], [1, 3, 'Radar Delta, Systémy Epsilon (demo)', [5, 6]],
+    [2, 1, 'Chemie Gama (demo)', [2, 5]], [2, 2, 'Radar Delta, Systémy Epsilon (demo)', [3, 1]], [2, 3, 'Munice Alfa, Obrana Beta (demo)', [4, 6]],
+    [3, 1, 'Radar Delta, Systémy Epsilon (demo)', [4, 2]], [3, 2, 'Munice Alfa, Obrana Beta (demo)', [3, 5]], [3, 3, 'Chemie Gama (demo)', [1, 6]],
   ].map(([round_no, room_no, lead, group_nos]) => ({ event_id: E, round_no, room_no, lead, group_nos })),
   participants,
   connections,
