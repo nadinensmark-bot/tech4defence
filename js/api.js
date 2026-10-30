@@ -1,5 +1,5 @@
 // Datová vrstva: Supabase (ostrý režim) nebo DEMO (bez backendu, data jen v paměti prohlížeče)
-import { DEMO_DATA } from './demo-data.js?v=20261030c';
+import { DEMO_DATA } from './demo-data.js?v=20261030d';
 
 const cfg = window.T4D_CONFIG || {};
 export const DEMO = !cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY || new URLSearchParams(location.search).has('demo');
@@ -17,7 +17,9 @@ function supabaseApi() {
 
   return {
     async session() { return (await sb.auth.getSession()).data.session; },
-    onAuth(cb) { sb.auth.onAuthStateChange((_e, s) => cb(s)); },
+    // překreslit jen při skutečném přihlášení/odhlášení; obnova tokenu a návrat do záložky (iOS) nesmí shodit scroll
+    onAuth(cb) { let last; sb.auth.getSession().then(({ data }) => { last = data.session?.user?.id || null; });
+      sb.auth.onAuthStateChange((_e, s) => { const id = s?.user?.id || null; if (id === last) return; last = id; cb(s); }); },
     async sendLink(addr) {
       addr = addr.trim().toLowerCase();
       const { data: ok, error } = await sb.rpc('can_login', { p_email: addr }); err(error);

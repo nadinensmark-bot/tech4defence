@@ -1,4 +1,4 @@
-import { api, DEMO, DEMO_FIRMA } from './api.js?v=20261030c';
+import { api, DEMO, DEMO_FIRMA } from './api.js?v=20261030d';
 
 const $ = s => document.querySelector(s);
 const app = $('#app');
@@ -228,7 +228,7 @@ async function viewEvent(id, tab = 'toceni') {
   page(hero(b.event, tab !== 'toceni' && tab !== 'program') + `<main class="evmain"><div class="wrap">
     ${me.status === 'registered' ? `<div class="notice warn" style="margin-bottom:16px">Vaše registrace čeká na potvrzení organizátorů. O${' '}potvrzení vás budeme informovat e-mailem.</div>` : ''}
     <nav class="tabs evtabs">${tabs.map(([k, l, sh]) => `<a href="#/e/${id}/${k}" class="${k === tab ? 'on' : ''}" ${k === tab ? 'aria-current="page"' : ''}>${svg(k)}<span class="long">${l}</span><span class="short">${sh}</span></a>`).join('')}</nav>${body}</div></main>`);
-  window.scrollTo(0, 0);
+  if (state.lastView !== location.hash) { window.scrollTo(0, 0); state.lastView = location.hash; }
   if (after) await after();
   if (tab === 'program') { bindVcf(); drawMap(b.event); }
   $('#pf')?.addEventListener('submit', async e => {
