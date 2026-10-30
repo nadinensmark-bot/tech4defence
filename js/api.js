@@ -38,13 +38,13 @@ function supabaseApi() {
     },
     async eventBundle(id) {
       const q = t => sb.from(t).select('*').eq('event_id', id);
-      const [ev, prog, groups, rooms, rounds, slots] = await Promise.all([
+      const [ev, prog, groups, rooms, rounds, slots, team] = await Promise.all([
         sb.from('events').select('*').eq('id', id).single(),
         q('program_items').order('sort'), q('groups').order('group_no'), q('rooms').order('room_no'),
-        q('rounds').order('round_no'), q('rotation_slots'),
+        q('rounds').order('round_no'), q('rotation_slots'), q('event_team').order('sort'),
       ]);
       [ev, prog, groups, rooms, rounds, slots].forEach(r => err(r.error));
-      return { event: ev.data, program: prog.data, groups: groups.data, rooms: rooms.data, rounds: rounds.data, slots: slots.data };
+      return { event: ev.data, program: prog.data, groups: groups.data, rooms: rooms.data, rounds: rounds.data, slots: slots.data, team: team.error ? [] : team.data };
     },
     async updateMyProfile(eventId, patch) {
       const { data, error } = await sb.rpc('update_my_profile', { p_event: eventId, p: patch }); err(error); return data;
@@ -78,6 +78,10 @@ function supabaseApi() {
       for (const { id, ...p } of list) await this.updateParticipant(id, p);
     },
     async deleteParticipant(id) { err((await sb.from('participants').delete().eq('id', id)).error); },
+    async saveTeam(eventId, list) {
+      err((await sb.from('event_team').delete().eq('event_id', eventId)).error);
+      if (list.length) err((await sb.from('event_team').insert(list.map((t, i) => ({ ...t, id: undefined, event_id: eventId, sort: i })))).error);
+    },
     async confirmAllRegistered(eventId) {
       err((await sb.from('participants').update({ status: 'confirmed' }).eq('event_id', eventId).eq('status', 'registered')).error);
     },
@@ -123,6 +127,7 @@ function demoApi() {
         program: byEvent('program_items', id).sort(sort('sort')),
         groups: byEvent('groups', id).sort(sort('group_no')), rooms: byEvent('rooms', id).sort(sort('room_no')),
         rounds: byEvent('rounds', id).sort(sort('round_no')), slots: byEvent('rotation_slots', id),
+        team: byEvent('event_team', id).sort(sort('sort')),
       };
     },
     async updateMyProfile(eventId, patch) {
@@ -159,6 +164,7 @@ function demoApi() {
     async updateParticipant(id, patch) { Object.assign(db.participants.find(p => p.id === id), patch); },
     async updateParticipants(list) { for (const { id, ...p } of list) await this.updateParticipant(id, p); },
     async deleteParticipant(id) { db.participants = db.participants.filter(p => p.id !== id); },
+    async saveTeam(eventId, list) { db.event_team = db.event_team.filter(t => t.event_id !== eventId).concat(list.map((t, i) => ({ ...t, event_id: eventId, sort: i }))); },
     async confirmAllRegistered(eventId) { byEvent('participants', eventId).filter(p => p.status === 'registered').forEach(p => p.status = 'confirmed'); },
     // ---- matchmaking (demo) ----
     _me(eventId) { return db.participants.find(p => p.event_id === eventId && p.email === me()); },

@@ -224,3 +224,15 @@ label.ci span{font-size:13px;color:var(--muted)}
   .ptable tr{width:100%}
 }
 @media (max-width:360px){ .tabs.evtabs a{font-size:10px} header.top .logos img.diana{display:none} }
+
+/* Organizační tým */
+.team{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:10px}
+.member{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:12px;background:var(--mist)}
+.member img,.member .ph,.tedit img,.tedit .ph{width:64px;height:64px;border-radius:50%;object-fit:cover;flex:none}
+.member .ph,.tedit .ph{display:flex;align-items:center;justify-content:center;background:var(--navy);color:#fff;font:600 20px 'Space Grotesk',sans-serif}
+.member .mi{min-width:0}
+.member .mi .muted{font-size:14px;line-height:1.35}
+.member .mc{display:flex;flex-direction:column;margin:6px 0 8px;font-size:15px}
+.member .mc a{word-break:break-all}
+.tedit{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}
+@media (max-width:720px){.tedit{flex-wrap:wrap}.member .mc a{padding:3px 0}}

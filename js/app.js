@@ -125,6 +125,18 @@ function matrix(b, hlGroup) {
       return `<div class="mslot ${hl ? 'hl' : ''}"><div><b>${esc(rm.name)}</b><div class="muted">${esc(s.lead || '')}</div></div><div class="mchips">${(s.group_nos || []).map(n => `<span class="chip"><i class="dot" style="background:${esc(grp(n)?.color_hex)}"></i>${n}</span>`).join('')}</div></div>`; }).join('')}</div>`).join('')}</div></div>`;
 }
 
+function initials(n) { return String(n || '').split(/\s+/).filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase(); }
+function teamHtml(b) {
+  if (!b.team?.length) return '';
+  const ev = { name: b.event.name, date: b.event.date };
+  return `<div class="card"><h2>Organizační tým</h2><p class="muted">Kdyby cokoli, ozvěte se kterémukoli z${'\u00a0'}nás.</p>
+    <div class="team">${b.team.map(t => { const c = { full_name: t.full_name, company: 'CzechInvest', position: t.role, email: t.email, phone: t.phone };
+      return `<div class="member">${t.photo ? `<img src="${esc(t.photo)}" alt="">` : `<span class="ph">${esc(initials(t.full_name))}</span>`}
+        <div class="mi"><b>${esc(t.full_name)}</b><div class="muted">${nb(t.role || '')}</div>
+        <div class="mc">${t.phone ? `<a href="tel:${esc(String(t.phone).replace(/\s/g, ''))}">${esc(t.phone)}</a>` : ''}${t.email ? `<a href="mailto:${esc(t.email)}">${esc(t.email)}</a>` : ''}</div>
+        <button class="small ghost" data-vcf='${esc(JSON.stringify({ c, ev }))}'>Uložit do telefonu</button></div></div>`; }).join('')}</div></div>`;
+}
+
 function programHtml(b) {
   const ev = b.event;
   return `<div class="card">${b.program.map(p => `<div class="prog"><div class="t">${esc(span(p.starts, p.ends))}</div><div><b>${nb(p.title)}</b>${p.detail ? `<div class="muted">${nb(p.detail)}</div>` : ''}</div></div>`).join('') || '<p class="muted">Program doplníme.</p>'}</div>
@@ -133,7 +145,7 @@ function programHtml(b) {
       ${ev.address ? `<a class="btn ghost" target="_blank" rel="noopener" href="https://mapy.cz/zakladni?q=${encodeURIComponent(ev.address)}">Otevřít v${' '}Mapy.cz</a>` : ''}</div>
     <div class="card"><h3>O akci</h3>${ev.organizers ? `<p>${nb('Pořádají ' + ev.organizers + '.')}</p>` : ''}${ev.description ? `<p class="muted">${nb(ev.description)}</p>` : ''}
       ${ev.contact_email ? `<p>Dotazy: <a href="mailto:${esc(ev.contact_email)}">${esc(ev.contact_email)}</a></p>` : ''}</div>
-  </div>`;
+  </div>${teamHtml(b)}`;
 }
 
 function profileHtml(me) {
@@ -178,6 +190,7 @@ async function viewEvent(id, tab = 'toceni') {
     <nav class="tabs evtabs">${tabs.map(([k, l, sh]) => `<a href="#/e/${id}/${k}" class="${k === tab ? 'on' : ''}" ${k === tab ? 'aria-current="page"' : ''}>${svg(k)}<span class="long">${l}</span><span class="short">${sh}</span></a>`).join('')}</nav>${body}</div></main>`);
   window.scrollTo(0, 0);
   if (after) await after();
+  if (tab === 'program') bindVcf();
   $('#pf')?.addEventListener('submit', async e => {
     e.preventDefault(); const fd = Object.fromEntries(new FormData(e.target)); fd.in_matchmaking = !!fd.in_matchmaking;
     try { await api.updateMyProfile(id, fd); toast('Profil uložen'); } catch (er) { toast('Chyba: ' + er.message, 5000); }
@@ -291,7 +304,7 @@ async function contactsView(b, me, id) {
       ${incoming.length ? `<h3 style="margin-top:18px">Čekají na vás (${incoming.length})</h3>${incoming.map(c => `<div class="req"><div><b>${esc(c.full_name)}</b> · ${esc(c.company)}${c.message ? `<div class="muted">„${esc(c.message)}“</div>` : ''}</div><div class="row"><button class="small" data-acc="${c.conn_id}">Přijmout</button><button class="small ghost" data-dec="${c.conn_id}">Odmítnout</button></div></div>`).join('')}` : ''}
       ${sent.length ? `<h3 style="margin-top:18px">Odeslané žádosti</h3>${sent.map(c => `<div class="muted">${esc(c.company)} (${esc(c.full_name)})</div>`).join('')}` : ''}
     </div></div>
-    <div class="grid g2">${ok.map(c => contactCard(c, ev, c.source === 'qr' ? '<span class="muted">přes QR</span>' : '')).join('')}</div>`;
+    <div class="grid g2">${ok.map(c => contactCard(c, ev, c.source === 'qr' ? '<span class="muted">přes QR</span>' : '')).join('')}</div>${teamHtml(b)}`;
   const after = async () => {
     try { const qrcode = await loadQR(); const qr = qrcode(0, 'M'); qr.addData(link); qr.make(); document.getElementById('qr').innerHTML = qr.createSvgTag({ cellSize: 6, margin: 2, scalable: true }); }
     catch { document.getElementById('qr').innerHTML = `<p class="muted">QR kód se nenačetl. Odkaz: ${esc(link)}</p>`; }
@@ -339,7 +352,7 @@ async function viewAdmin() {
   };
 }
 
-const adminTabs = [['ucastnici', 'Účastníci'], ['toceni', 'Točení'], ['program', 'Program'], ['info', 'Info o akci'], ['jmenovky', 'Jmenovky']];
+const adminTabs = [['ucastnici', 'Účastníci'], ['toceni', 'Točení'], ['program', 'Program'], ['tym', 'Tým'], ['info', 'Info o akci'], ['jmenovky', 'Jmenovky']];
 
 async function viewAdminEvent(id, tab = 'ucastnici') {
   loader();
@@ -350,6 +363,7 @@ async function viewAdminEvent(id, tab = 'ucastnici') {
   if (tab === 'info') return adminInfo(b, wrap);
   if (tab === 'program') return adminProgram(b, wrap);
   if (tab === 'toceni') return adminRotation(b, wrap);
+  if (tab === 'tym') return adminTeam(b, wrap);
   const ps = await api.listParticipants(id);
   if (tab === 'jmenovky') return adminTags(b, ps, wrap);
   return adminParticipants(b, ps, wrap);
@@ -390,6 +404,36 @@ function adminProgram(b, wrap) {
     app.querySelectorAll('[data-del]').forEach(x => x.onclick = () => { items.splice(+x.dataset.del, 1); draw(); });
     $('#add').onclick = () => { items.push({ starts: '', ends: '', title: '', detail: '' }); draw(); };
     $('#save').onclick = async () => { try { await api.saveProgram(b.event.id, items); toast('Program uložen'); } catch (er) { toast('Chyba: ' + er.message, 5000); } };
+  };
+  draw();
+}
+
+function resizePhoto(file) {
+  return new Promise((ok, ko) => { const img = new Image(); img.onload = () => {
+    const s = Math.min(img.width, img.height), c = document.createElement('canvas'); c.width = c.height = 160;
+    c.getContext('2d').drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, 160, 160);
+    URL.revokeObjectURL(img.src); ok(c.toDataURL('image/jpeg', 0.82)); }; img.onerror = ko; img.src = URL.createObjectURL(file); });
+}
+function adminTeam(b, wrap) {
+  let list = (b.team || []).map(t => ({ full_name: t.full_name, role: t.role || '', email: t.email || '', phone: t.phone || '', photo: t.photo || null }));
+  const draw = () => {
+    wrap(`<div class="card"><h2>Organizační tým</h2><p class="muted">Účastníci tým uvidí v${'\u00a0'}záložce Program a${'\u00a0'}v${'\u00a0'}Kontaktech, včetně tlačítka pro uložení do telefonu.</p>
+      ${list.map((t, i) => `<div class="tedit">${t.photo ? `<img src="${esc(t.photo)}" alt="">` : `<span class="ph">${esc(initials(t.full_name))}</span>`}
+        <div class="grid g2" style="flex:1;gap:8px">
+          <input data-i="${i}" data-k="full_name" value="${esc(t.full_name)}" placeholder="Jméno">
+          <input data-i="${i}" data-k="role" value="${esc(t.role)}" placeholder="Role na akci">
+          <input data-i="${i}" data-k="phone" value="${esc(t.phone)}" placeholder="Telefon">
+          <input data-i="${i}" data-k="email" value="${esc(t.email)}" placeholder="E-mail">
+        </div>
+        <div class="row" style="flex-direction:column;align-items:stretch"><label class="btn ghost small" style="margin:0">Fotka<input type="file" accept="image/*" data-photo="${i}" hidden></label>
+          <button class="small ghost" data-up="${i}" ${i ? '' : 'disabled'}>↑</button><button class="small danger" data-del="${i}">×</button></div></div>`).join('')}
+      <div class="row" style="margin-top:12px"><button class="ghost" id="tadd">+ Přidat člena</button><button id="tsave">Uložit tým</button></div></div>`);
+    app.querySelectorAll('input[data-i]').forEach(x => x.oninput = () => { list[x.dataset.i][x.dataset.k] = x.value; });
+    app.querySelectorAll('[data-photo]').forEach(x => x.onchange = async () => { if (x.files[0]) { list[x.dataset.photo].photo = await resizePhoto(x.files[0]); draw(); } });
+    app.querySelectorAll('[data-del]').forEach(x => x.onclick = () => { list.splice(+x.dataset.del, 1); draw(); });
+    app.querySelectorAll('[data-up]').forEach(x => x.onclick = () => { const i = +x.dataset.up; [list[i - 1], list[i]] = [list[i], list[i - 1]]; draw(); });
+    $('#tadd').onclick = () => { list.push({ full_name: '', role: '', email: '', phone: '', photo: null }); draw(); };
+    $('#tsave').onclick = async () => { try { await api.saveTeam(b.event.id, list.filter(t => t.full_name.trim())); toast('Tým uložen'); } catch (er) { toast('Chyba: ' + er.message, 5000); } };
   };
   draw();
 }

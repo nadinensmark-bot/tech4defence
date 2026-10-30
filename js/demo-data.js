@@ -47,4 +47,8 @@ export const DEMO_DATA = {
   ].map(([round_no, room_no, lead, group_nos]) => ({ event_id: E, round_no, room_no, lead, group_nos })),
   participants,
   connections,
+  event_team: [
+    { event_id: E, sort: 0, full_name: 'Organizátorka Ukázková', role: 'Hlavní organizátorka akce (demo)', email: 'org@demo.cz', phone: '+420 600 000 001', photo: null },
+    { event_id: E, sort: 1, full_name: 'Organizátor Vzorový', role: 'Registrace a prezence (demo)', email: 'org2@demo.cz', phone: '+420 600 000 002', photo: null },
+  ],
 };

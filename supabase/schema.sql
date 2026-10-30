@@ -438,3 +438,24 @@ grant execute on function public.my_pid(uuid) to authenticated;
 -- Anonymní role nesmí na žádnou tabulku (data čte jen přihlášený uživatel přes RLS)
 revoke all on all tables in schema public from anon;
 alter default privileges in schema public revoke all on tables from anon;
+
+-- ============ ORGANIZAČNÍ TÝM AKCE ============
+create table if not exists public.event_team (
+  id uuid primary key default gen_random_uuid(),
+  event_id uuid not null references public.events(id) on delete cascade,
+  sort int not null default 0,
+  full_name text not null,
+  role text,
+  email text,
+  phone text,
+  photo text -- malý JPEG jako data URL (fotky nejsou veřejně na webu, čte je jen přihlášený účastník)
+);
+alter table public.event_team enable row level security;
+drop policy if exists team_read on public.event_team;
+create policy team_read on public.event_team for select to authenticated
+  using (public.is_participant(event_id) or public.is_admin());
+drop policy if exists team_admin on public.event_team;
+create policy team_admin on public.event_team for all to authenticated
+  using (public.is_admin()) with check (public.is_admin());
+grant select, insert, update, delete on public.event_team to authenticated;
+revoke all on public.event_team from anon;
