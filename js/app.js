@@ -1,4 +1,5 @@
-import { api, DEMO, DEMO_FIRMA, DEMO_USER } from './api.js?v=20261030f';
+import { api, DEMO, DEMO_FIRMA, DEMO_USER } from './api.js?v=20261110a';
+import { parseWorkbook, planImport, buildWorkbook } from './excel-import.js?v=20261110a';
 
 const $ = s => document.querySelector(s);
 const app = $('#app');
@@ -570,7 +571,7 @@ function adminRotation(b, wrap) {
   };
   const draw = () => {
     const warn = checkRotation(s);
-    wrap(`<div class="grid g3">
+    wrap(`${excelCard()}<div class="grid g3">
       <div class="card"><h3>Barevné skupiny</h3>${s.groups.map((g, i) => `<div class="row" style="margin-bottom:8px"><b style="width:22px">${g.group_no}</b>
         <input type="color" data-g="${i}" data-k="color_hex" value="${esc(g.color_hex)}" style="width:44px;padding:2px">
         <input data-g="${i}" data-k="color_name" value="${esc(g.color_name)}" style="flex:1"></div>`).join('')}
@@ -589,6 +590,7 @@ function adminRotation(b, wrap) {
       </table></div>
       <div style="margin:14px 0">${warn.length ? `<ul class="warnlist">${warn.map(w => `<li>${esc(w)}</li>`).join('')}</ul>` : `<p class="oklist">✓ Každá skupina je v${' '}každém kole jednou a${' '}dostane se ke všem stolům zbrojařů.</p>`}</div>
       <div class="row"><button id="save">Uložit rozpis</button><select id="copyfrom" style="width:auto"><option value="">Zkopírovat strukturu z jiné akce…</option></select></div></div>`);
+    bindExcel(b, () => api.listParticipants(b.event.id), () => route());
     app.querySelectorAll('[data-g]').forEach(i => i.oninput = () => { s.groups[i.dataset.g][i.dataset.k] = i.value; if (i.type === 'color') draw(); });
     app.querySelectorAll('[data-m]').forEach(i => i.oninput = () => { s.rooms[i.dataset.m][i.dataset.k] = i.value; });
     app.querySelectorAll('[data-r]').forEach(i => i.oninput = () => { s.rounds[i.dataset.r][i.dataset.k] = i.value; });
@@ -618,6 +620,71 @@ function adminRotation(b, wrap) {
     });
   };
   draw();
+}
+
+// ---------- EXCEL: účastníci, medailonky, skupiny, barvy a točení (stáhnout → upravit → nahrát) ----------
+function excelCard() {
+  return `<div class="card" id="xlcard"><h3>Excel: účastníci, skupiny, barvy a${' '}točení</h3>
+    <p class="muted">Stáhněte aktuální stav, upravte ho v${' '}Excelu (seznam účastníků a${' '}medailonky, skupina a${' '}barva, místnosti po kolech, stoly zbrojařů) a${' '}nahrajte zpět. Funguje i${' '}soubor ve formátu „rozdělení do skupin“ (listy s${' '}rozdělením a${' '}„Rotace po kolech“). Před uložením uvidíte, co se změní.</p>
+    <div class="row"><button class="ghost small" id="xldown">Stáhnout aktuální stav (xlsx)</button><input type="file" id="xlfile" accept=".xlsx,.xls" style="width:auto"></div><div id="xlplan"></div></div>`;
+}
+
+function bindExcel(b, getPs, onDone) {
+  $('#xldown').onclick = async () => {
+    const XLSX = await loadXLSX(); const ps = await getPs();
+    XLSX.writeFile(buildWorkbook(XLSX, b, ps), `T4D_${b.event.slug}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
+  $('#xlfile').onchange = async e => {
+    const file = e.target.files[0]; if (!file) return;
+    const box = $('#xlplan'); box.innerHTML = '<p class="muted">Načítám…</p>';
+    try {
+      const XLSX = await loadXLSX(); const ps = await getPs();
+      const parsed = parseWorkbook(XLSX, XLSX.read(await file.arrayBuffer()));
+      const plan = planImport(parsed, b, ps);
+      renderPlan(box, parsed, plan, b, onDone);
+    } catch (er) { console.error(er); box.innerHTML = `<div class="notice err" style="margin-top:10px">Soubor nejde přečíst: ${esc(er.message)}</div>`; }
+    e.target.value = '';
+  };
+}
+
+const FIELD_CZ = { full_name: 'jméno', company: 'firma', position: 'pozice', phone: 'telefon', web: 'web', sector: 'sektor', description: 'medailonek', group_no: 'skupina', kind: 'typ', status: 'stav', form_id: 'ID přihlášky' };
+function renderPlan(box, parsed, plan, b, onDone) {
+  const who = p => `${esc(p.company || '')}${p.full_name ? ' · ' + esc(p.full_name) : ''}`;
+  const det = (title, inner) => `<details style="margin:4px 0 0 26px"><summary class="muted" style="cursor:pointer">${title}</summary><div style="margin-top:6px;font-size:14px">${inner}</div></details>`;
+  const chk = (id, on, label, extra = '') => `<label class="ci" style="display:flex;gap:8px;align-items:flex-start;margin-top:12px"><input type="checkbox" id="${id}" ${on ? 'checked' : ''} style="width:auto;margin-top:4px"><span><b>${label}</b>${extra}</span></label>`;
+  const rw = plan.rotation ? checkRotation(plan.rotation) : [];
+  const fieldsOf = u => Object.keys(u.patch).map(k => FIELD_CZ[k] || k).join(', ');
+  const parts = [];
+  parts.push(`<div class="notice" style="margin-top:10px">Přečteno: ${parsed.sheets.map(esc).join(' · ') || 'nic, co bych poznal'}.</div>`);
+  if (plan.updates.length) parts.push(chk('xu', true, `Upravit údaje u${' '}${plan.updates.length} účastníků`) + det('co se změní', plan.updates.map(u => `<div>${who(u.p)}: ${esc(fieldsOf(u))}${u.how !== 'e-mail' ? ` <span class="muted">(spárováno podle: ${u.how})</span>` : ''}</div>`).join('')));
+  if (plan.creates.length) parts.push(chk('xc', true, `Přidat ${plan.creates.length} nových účastníků`, ' <span class="muted">(jako potvrzené; můžou se přihlásit svým e-mailem)</span>') + det('kdo', plan.creates.map(c => `<div>${who(c)} · ${esc(c.email)}${c.group_no ? ` · skupina ${c.group_no}` : ' · bez skupiny'}</div>`).join('')));
+  if (plan.emailFixes.length) parts.push(chk('xe', false, `Přepsat e-mail u${' '}${plan.emailFixes.length} účastníků podle souboru`, ' <span class="muted">(e-mail je přihlašovací, měňte jen opravu překlepu)</span>') + det('které', plan.emailFixes.map(f => `<div>${who(f.p)}: ${esc(f.from)} → ${esc(f.to)}${f.taken ? ' <b>(nový e-mail už má jiný účastník, přeskočím)</b>' : ''}</div>`).join('')));
+  if (plan.missing.length) parts.push(`<div style="margin-top:12px"><b>V${' '}appce, ale v${' '}souboru chybí: ${plan.missing.length} civilních firem</b> <span class="muted">(zaškrtnuté se označí „Zrušil účast“, nezaškrtnuté zůstanou beze změny)</span>
+    <div style="margin:6px 0 0 4px">${plan.missing.map(p => `<label class="ci" style="display:flex;gap:8px;margin:3px 0"><input type="checkbox" data-xm="${p.id}" style="width:auto"><span>${who(p)} <span class="muted">${esc(p.email)} · ${KIND[p.kind] || ''}${p.group_no ? ' · skupina ' + p.group_no : ''}</span></span></label>`).join('')}</div></div>`);
+  if (plan.rotation) parts.push(chk('xr', !!plan.rotationDiff.length, plan.rotationDiff.length ? 'Nahradit skupiny, barvy a rozpis točení' : 'Skupiny a rozpis točení jsou stejné jako v appce')
+    + (plan.rotationDiff.length ? det(`${plan.rotationDiff.length} změn`, plan.rotationDiff.map(d => `<div>${esc(d)}</div>`).join('')) : '')
+    + `<div style="margin:6px 0 0 26px">${plan.rotation.groups.map(g => `<span class="chip"><i class="dot" style="background:${esc(g.color_hex)}"></i>${g.group_no} ${esc(g.color_name)}</span>`).join('')}</div>`
+    + (rw.length ? `<ul class="warnlist" style="margin:6px 0 0 26px">${rw.map(w => `<li>${esc(w)}</li>`).join('')}</ul>` : ''));
+  if (plan.unmatched.length) parts.push(`<div class="notice warn" style="margin-top:12px">Bez e-mailu a${'\u00a0'}bez shody v${'\u00a0'}appce: ${plan.unmatched.length} řádků, nic s${'\u00a0'}nimi neudělám.
+    <details><summary style="cursor:pointer">které</summary>${plan.unmatched.map(r => `${esc(r.company || '')} ${esc(r.full_name || '')}${r.form_id ? ' (ID ' + esc(r.form_id) + ')' : ''}`).join(', ')}</details></div>`);
+  if (plan.warnings.length) parts.push(`<ul class="warnlist" style="margin-top:12px">${plan.warnings.map(w => `<li>${esc(w)}</li>`).join('')}</ul>`);
+  const nothing = !plan.updates.length && !plan.creates.length && !plan.emailFixes.length && !plan.missing.length && !(plan.rotation && plan.rotationDiff.length);
+  parts.push(nothing ? '<p class="oklist" style="margin-top:12px">✓ Appka už odpovídá souboru, není co měnit.</p>' : '<div class="row" style="margin-top:14px"><button id="xlapply">Použít změny</button></div>');
+  box.innerHTML = parts.join('');
+  const btn = $('#xlapply'); if (!btn) return;
+  btn.onclick = async () => {
+    const on = id => $('#' + id)?.checked;
+    const cancel = [...box.querySelectorAll('[data-xm]:checked')].map(x => x.dataset.xm);
+    btn.disabled = true; btn.textContent = 'Ukládám…'; const done = [];
+    try {
+      if (plan.rotation && on('xr')) { await api.saveRotation(b.event.id, { ...plan.rotation, slots: plan.rotation.slots.filter(x => x.lead || x.group_nos.length) }); done.push('točení'); }
+      if (on('xu')) { await api.updateParticipants(plan.updates.map(u => ({ id: u.id, ...u.patch }))); done.push(`upraveno ${plan.updates.length}`); }
+      if (on('xe')) { const ok = plan.emailFixes.filter(f => !f.taken); await api.updateParticipants(ok.map(f => ({ id: f.id, email: f.to }))); done.push(`e-maily ${ok.length}`); }
+      if (on('xc')) { await api.upsertParticipants(plan.creates.map(c => ({ ...c, event_id: b.event.id }))); done.push(`přidáno ${plan.creates.length}`); }
+      if (cancel.length) { await api.updateParticipants(cancel.map(id => ({ id, status: 'cancelled' }))); done.push(`zrušeno ${cancel.length}`); }
+      toast('Uloženo: ' + (done.join(', ') || 'nic'), 4000); onDone();
+    } catch (er) { console.error(er); toast('Chyba při ukládání: ' + er.message + (done.length ? ` (stihlo se: ${done.join(', ')})` : ''), 8000); btn.disabled = false; btn.textContent = 'Použít změny'; }
+  };
 }
 
 // Import z MS Forms (Formulář zájmu o akci …xlsx) nebo CSV
@@ -690,6 +757,7 @@ function adminParticipants(b, ps, wrap) {
       <div class="card"><div class="row">${b.groups.map(g => `<span class="chip"><i class="dot" style="background:${esc(g.color_hex)}"></i>${g.group_no}: ${grpCount(g.group_no)}</span>`).join('') || '<span class="muted">Skupiny nejsou nastavené (záložka Točení)</span>'}</div></div>
     </div>
     ${defenceCheck(b, ps)}
+    ${excelCard()}
     <div class="card"><h3>Import registrací</h3><p class="muted">Nahrajte export z${' '}MS Forms (Formulář zájmu o${' '}akci …xlsx) nebo CSV. Soubor s${'\u00a0'}rozdělením do skupin (sloupce „Skupina“ a „ID přihlášky“) se spáruje podle ID. Existující účastníky (podle e-mailu) jen aktualizuje, stav ani skupinu nepřepíše.</p>
       <div class="row"><input type="file" id="file" accept=".xlsx,.xls,.csv" style="width:auto"></div><div id="imp"></div></div>
     <div class="card"><div class="row" style="justify-content:space-between;margin-bottom:10px">
@@ -704,6 +772,7 @@ function adminParticipants(b, ps, wrap) {
         <td data-l="Skupina"><select data-p="${p.id}" data-k="group_no"><option value="">bez skupiny</option>${b.groups.map(g => `<option value="${g.group_no}" ${p.group_no === g.group_no ? 'selected' : ''}>${g.group_no} ${esc(g.color_name)}</option>`).join('')}</select></td>
         <td data-l="Prezence"><label class="ci"><input type="checkbox" data-ci="${p.id}" ${p.checked_in_at ? 'checked' : ''}><span>${p.checked_in_at ? 'Dorazil' : 'Nedorazil'}</span></label></td>
         <td class="del"><button class="small danger" data-del="${p.id}" aria-label="Smazat">×</button></td></tr>`).join('')}</table></div></div>`);
+    bindExcel(b, async () => ps, () => route());
     api.connectionCount(id).then(n => { const el = $('#conncount'); if (el) el.textContent = n; }).catch(() => {});
     const qi = $('#q'); qi.oninput = () => { filter = qi.value; draw(); const n = $('#q'); n.focus(); n.setSelectionRange(n.value.length, n.value.length); };
     app.querySelectorAll('select[data-p]').forEach(sel => sel.onchange = async () => {

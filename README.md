@@ -10,6 +10,7 @@ Webová aplikace Defence Hubu pro akce TECH4DEFENCE. Každý účastník se při
 
 Admin (tým DH a organizátoři) má navíc **Administraci**:
 
+- **Excel (Účastníci i Točení)**: „Stáhnout aktuální stav“ dá xlsx se třemi listy (Účastníci vč. medailonků a místností po kolech, Rotace po kolech se stoly zbrojařů, Skupiny s barvami). Upravený soubor se nahraje zpět a appka ukáže náhled: komu se změní které údaje, kdo přibude, komu opravit e-mail, kdo v souboru chybí (ručně zaškrtnout „Zrušil účast“) a jak se změní skupiny, barvy a rozpis. Uloží se jen zaškrtnuté. Bere i formát `T4D_…_rozdeleni_skupin.xlsx`. Párování: e-mail → ID přihlášky → firma + jméno.
 - **Účastníci**: import exportu z MS Forms (`Formulář zájmu o akci …xlsx`) nebo CSV, potvrzení registrací (jednotlivě i hromadně), typ (civilní firma / zbrojař / organizátor), ruční přiřazení skupiny, **automatické rozdělení do skupin** (vyrovnaný počet, obory rozprostřené), prezence, export CSV.
 - **Točení**: barevné skupiny, místnosti (s nápovědou, kde je najdou), kola s časy a mřížka rozpisu. Appka hlídá, že je každá skupina v každém kole právě jednou a ke každému stolu zbrojařů se dostane právě jednou. Strukturu jde zkopírovat z jiné akce.
 - **Program**, **Info o akci** (zveřejnění, medailonky), **Jmenovky** k tisku (A4, 8 na stránku, barevný pruh podle skupiny).
