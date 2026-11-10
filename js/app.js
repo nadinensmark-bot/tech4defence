@@ -1,5 +1,5 @@
-import { api, DEMO, DEMO_FIRMA, DEMO_USER } from './api.js?v=20261110a';
-import { parseWorkbook, planImport, buildWorkbook } from './excel-import.js?v=20261110a';
+import { api, DEMO, DEMO_FIRMA, DEMO_USER } from './api.js?v=20261110b';
+import { parseWorkbook, planImport, buildWorkbook } from './excel-import.js?v=20261110b';
 
 const $ = s => document.querySelector(s);
 const app = $('#app');
@@ -43,33 +43,46 @@ function bindHeader() { $('#logout')?.addEventListener('click', async () => { aw
 function page(inner) { app.innerHTML = header() + inner; bindHeader(); }
 
 // ---------- PŘIHLÁŠENÍ ----------
-function viewLogin(scanNote = false) {
+// Přihlašuje se jen KÓDEM z e-mailu. Odkaz s tokenem v e-mailu není: firemní pošta (Microsoft Defender Safe Links)
+// ho při doručení sama „proklikne“, a tím zneplatní odkaz i kód. Odkaz v e-mailu jen otevře tuto stránku (#/kod).
+const LAST_EMAIL = 't4d_last_email';
+function viewLogin(scanNote = false, codeFirst = false) {
+  const last = store.get(LAST_EMAIL) || '';
   page(`<main><div class="wrap"><div class="login card">
     <h1>TECH4DEFENCE</h1>
-    ${scanNote ? `<div class="notice" style="margin-bottom:12px">Naskenovali jste vizitku účastníka. Po přihlášení si s ním vyměníte kontakt.</div>` : ''}
+    ${scanNote ? `<div class="notice" style="margin-bottom:12px">Naskenovali jste vizitku účastníka. Po přihlášení si s${'\u00a0'}ním vyměníte kontakt.</div>` : ''}
     ${window.__authError ? `<div class="notice warn" style="margin-bottom:12px">${esc(window.__authError)}</div>` : ''}
-    <p class="muted">Přihlaste se e-mailem, který jste uvedli v${' '}registračním formuláři. Pošleme vám přihlašovací kód, heslo není potřeba.</p>
-    <form id="lf"><label><span>E-mail</span><input type="email" name="email" required autocomplete="email" placeholder="jmeno@firma.cz"></label>
-    <button type="submit">Poslat přihlašovací kód</button></form>
+    <p class="muted">Přihlaste se e-mailem, který jste uvedli v${'\u00a0'}registračním formuláři. Pošleme vám přihlašovací kód, heslo není potřeba.</p>
+    <form id="lf"><label><span>E-mail</span><input type="email" name="email" required autocomplete="email" placeholder="jmeno@firma.cz" value="${esc(last)}"></label>
+    <div class="row"><button type="submit">Poslat přihlašovací kód</button><button type="button" class="ghost" id="havecode">Už mám kód</button></div></form>
     <div id="lmsg" style="margin-top:14px"></div>
   </div></div></main>`);
+  const emailOf = () => $('#lf').email.value.trim().toLowerCase();
+  const showCode = (sent) => {
+    $('#lmsg').innerHTML = `${sent ? `<div class="notice">Pokud je e-mail mezi registrovanými, do pár minut vám přijde e-mail s${'\u00a0'}<b>kódem</b>. Firemní pošta ho někdy chvíli kontroluje, zkontrolujte i${'\u00a0'}spam.</div>` : ''}
+      <form id="cf" style="margin-top:14px"><label><span>Kód z${'\u00a0'}e-mailu</span><input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{6,10}" required placeholder="12345678" style="font-size:22px;letter-spacing:.2em;text-align:center"></label>
+      <button type="submit">Přihlásit se kódem</button></form>
+      <p class="muted" style="font-size:14px;margin-top:10px">Kód platí hodinu. Když si necháte poslat nový, starý přestane platit.</p>`;
+    $('#cf').addEventListener('submit', async ev => {
+      ev.preventDefault(); const b2 = ev.target.querySelector('button');
+      const addr = emailOf(); if (!/@/.test(addr)) { toast('Nejdřív vyplňte e-mail'); $('#lf').email.focus(); return; }
+      b2.disabled = true;
+      try { await api.verifyCode(addr, ev.target.code.value); store.set(LAST_EMAIL, null); if (location.hash.startsWith('#/kod')) location.replace('#/'); }
+      catch (er) { toast('Kód nesedí nebo už vypršel. Pošlete si nový.', 5000); b2.disabled = false; }
+    });
+    $('#cf input').focus();
+  };
+  $('#havecode').onclick = () => showCode(false);
+  if (codeFirst) showCode(false);
   $('#lf').addEventListener('submit', async e => {
-    e.preventDefault(); const btn = e.target.querySelector('button'); btn.disabled = true;
-    const addr = e.target.email.value;
+    e.preventDefault(); const btn = e.target.querySelector('button[type=submit]'); btn.disabled = true;
+    const addr = emailOf();
     try {
       await api.sendLink(addr);
       if (DEMO) { $('#lmsg').innerHTML = `<div class="notice">V${'\u00a0'}demu vás rovnou přihlásíme (pokud e-mail v${'\u00a0'}ukázkových datech existuje).</div>`; btn.disabled = false; return; }
-      $('#lmsg').innerHTML = `<div class="notice">Pokud je e-mail mezi registrovanými, přijde vám během chvilky e-mail s${'\u00a0'}<b>kódem</b> a${'\u00a0'}odkazem. Zkontrolujte i${'\u00a0'}spam.</div>
-        <form id="cf" style="margin-top:14px"><label><span>Kód z${'\u00a0'}e-mailu</span><input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{6,10}" required placeholder="123456" style="font-size:22px;letter-spacing:.2em;text-align:center"></label>
-        <button type="submit">Přihlásit se kódem</button></form>
-        <p class="muted" style="font-size:14px;margin-top:10px">Odkaz v${'\u00a0'}e-mailu nefunguje? Firemní pošta ho někdy předem „proklikne“ a${'\u00a0'}tím ho zneplatní. Kód funguje vždy.</p>`;
-      $('#cf').addEventListener('submit', async ev => {
-        ev.preventDefault(); const b2 = ev.target.querySelector('button'); b2.disabled = true;
-        try { await api.verifyCode(addr, ev.target.code.value); }
-        catch (er) { toast('Kód nesedí nebo už vypršel. Pošlete si nový.', 5000); b2.disabled = false; }
-      });
-      $('#cf input').focus();
-    } catch (er) { $('#lmsg').innerHTML = `<div class="notice err">Odkaz se nepodařilo odeslat: ${esc(er.message)}</div>`; }
+      store.set(LAST_EMAIL, addr);
+      showCode(true);
+    } catch (er) { $('#lmsg').innerHTML = `<div class="notice err">Kód se nepodařilo odeslat: ${esc(er.message)}</div>`; }
     btn.disabled = false;
   });
 }
@@ -866,7 +879,7 @@ async function route() {
   try {
     state.session = await api.session();
     const scan = location.hash.match(/^#\/k\/([\w-]+)/);
-    if (!state.session) { if (scan) store.set(PENDING, scan[1]); return viewLogin(!!(scan || store.get(PENDING))); }
+    if (!state.session) { if (scan) store.set(PENDING, scan[1]); return viewLogin(!!(scan || store.get(PENDING)), /^#\/kod/.test(location.hash)); }
     if (scan) { store.set(PENDING, null); return viewScan(scan[1]); }
     const pend = store.get(PENDING); if (pend) { store.set(PENDING, null); location.replace('#/k/' + pend); return; }
     state.admin = await api.isAdmin();
